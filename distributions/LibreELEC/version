@@ -1,5 +1,5 @@
-# VERSION: set full version, use "devel" for development version
-  DISTRO_VERSION="devel"
+# VERSION: set full version
+  DISTRO_VERSION="22.01-alpha-01"
 
 # OS_VERSION: OS Version
   OS_VERSION="13.0"
