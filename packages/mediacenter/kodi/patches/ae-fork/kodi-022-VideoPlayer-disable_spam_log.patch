@@ -1,0 +1,12 @@
+diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+--- kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2025-06-04 12:12:43.011627829 +0000
++++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2025-06-04 12:16:38.000000000 +0000
+@@ -3693,7 +3693,7 @@ bool CVideoPlayer::OpenStream(CCurrentSt
+   CDemuxStream* stream = NULL;
+   CDVDStreamInfo hint;
+ 
+-  CLog::Log(LOGINFO, "Opening stream: {} source: {}", iStream, source);
++  // CLog::Log(LOGINFO, "Opening stream: {} source: {}", iStream, source);
+ 
+   if(STREAM_SOURCE_MASK(source) == STREAM_SOURCE_DEMUX_SUB)
+   {
