@@ -69,3 +69,7 @@
     if [ ${SYSTEM_SIZE} -lt 1024 ]; then
       SYSTEM_SIZE=1024
     fi
+
+  # Entware support
+    ENTWARE_SUPPORT="yes"
+    ENTWARE_ARCH="x64-k3.2"
