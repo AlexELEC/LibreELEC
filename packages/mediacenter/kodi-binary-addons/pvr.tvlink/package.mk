@@ -4,8 +4,8 @@
 
 PKG_NAME="pvr.tvlink"
 PKG_VERSION="22.0.1"
-PKG_SHA256="52cce544a3cd66072acb0c127f2fc697d838acfc847d262c9bf839ac09bc188a"
-PKG_REV="1"
+PKG_SHA256="d472cd77ef0d06bb9e096e0f11b541093566ef138d3bef7bf438f104d4ab1a3a"
+PKG_REV="0"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/AlexELEC/pvr.tvlink"
