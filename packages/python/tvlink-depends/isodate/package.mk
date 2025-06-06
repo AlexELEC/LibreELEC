@@ -11,6 +11,11 @@ PKG_DEPENDS_TARGET="toolchain Python3 setuptools:host"
 PKG_LONGDESC="ISO 8601 date/time parser."
 PKG_TOOLCHAIN="python"
 
+post_unpack() {
+  # add version.py
+  echo 'version = "0.7.2"' > ${PKG_BUILD}/src/isodate/version.py
+}
+
 post_makeinstall_target() {
   python_remove_source
 }
