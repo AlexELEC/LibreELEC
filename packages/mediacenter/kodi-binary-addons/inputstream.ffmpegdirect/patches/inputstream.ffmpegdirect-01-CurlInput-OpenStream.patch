@@ -1,23 +1,10 @@
-diff -Naurp inputstream.ffmpegdirect/inputstream.ffmpegdirect/addon.xml.in inputstream.ffmpegdirect-patch/inputstream.ffmpegdirect/addon.xml.in
---- inputstream.ffmpegdirect/inputstream.ffmpegdirect/addon.xml.in	2025-04-01 16:11:20.000000000 +0000
-+++ inputstream.ffmpegdirect-patch/inputstream.ffmpegdirect/addon.xml.in	2025-06-03 09:27:41.000000000 +0000
-@@ -1,7 +1,7 @@
- <?xml version="1.0" encoding="UTF-8"?>
- <addon
-   id="inputstream.ffmpegdirect"
--  version="22.1.1"
-+  version="22.10.1"
-   name="Inputstream FFmpeg Direct"
-   provider-name="Ross Nicholson">
-   <requires>@ADDON_DEPENDS@</requires>
 diff -Naurp inputstream.ffmpegdirect/src/stream/CurlInput.cpp inputstream.ffmpegdirect-patch/src/stream/CurlInput.cpp
 --- inputstream.ffmpegdirect/src/stream/CurlInput.cpp	2025-04-01 16:11:20.000000000 +0000
-+++ inputstream.ffmpegdirect-patch/src/stream/CurlInput.cpp	2025-06-03 09:28:38.000000000 +0000
-@@ -43,44 +43,18 @@ bool CurlInput::Open(const std::string&
-   if (!m_pFile)
++++ inputstream.ffmpegdirect-patch/src/stream/CurlInput.cpp	2025-06-11 14:05:35.000000000 +0000
+@@ -44,31 +44,7 @@ bool CurlInput::Open(const std::string&
      return false;
  
--  flags |= ADDON_READ_AUDIO_VIDEO;
+   flags |= ADDON_READ_AUDIO_VIDEO;
 -
 -  /*
 -   * There are 5 buffer modes available (configurable in as.xml)
@@ -43,24 +30,22 @@ diff -Naurp inputstream.ffmpegdirect/src/stream/CurlInput.cpp inputstream.ffmpeg
 -
 -  if (!(flags & ADDON_READ_CACHED))
 -    flags |= ADDON_READ_NO_CACHE; // Make sure CFile honors our no-cache hint
-+  flags = ADDON_READ_TRUNCATED | ADDON_READ_NO_CACHE | ADDON_READ_AUDIO_VIDEO;
++  flags |= ADDON_READ_NO_CACHE;
  
    std::string content = m_mimeType;
  
--  if (content == "video/mp4" ||
--      content == "video/x-msvideo" ||
--      content == "video/avi" ||
--      content == "video/x-matroska" ||
--      content == "video/x-matroska-3d")
--    flags |= ADDON_READ_MULTI_STREAM;
+@@ -79,8 +55,14 @@ bool CurlInput::Open(const std::string&
+       content == "video/x-matroska-3d")
+     flags |= ADDON_READ_MULTI_STREAM;
+ 
+-  // open file in binary mode
+-  if (!m_pFile->OpenFile(m_filename, flags))
 +  m_pFile->CURLCreate(m_filename.c_str());
 +  m_pFile->CURLAddOption(ADDON_CURL_OPTION_PROTOCOL, "connection-timeout", "10");
 +  m_pFile->CURLAddOption(ADDON_CURL_OPTION_PROTOCOL, "data-timeout", "0");
 +  m_pFile->CURLAddOption(ADDON_CURL_OPTION_PROTOCOL, "lowspeed-time", "0");
 +  m_pFile->CURLAddOption(ADDON_CURL_OPTION_PROTOCOL, "speed-limit", "0");
- 
--  // open file in binary mode
--  if (!m_pFile->OpenFile(m_filename, flags))
++
 +  // open url
 +  if (!m_pFile->CURLOpen(flags))
    {
