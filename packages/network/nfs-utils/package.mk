@@ -7,7 +7,7 @@ PKG_SHA256="11e7c5847a8423a72931c865bd9296e7fd56ff270a795a849183900961711725"
 PKG_LICENSE="GPL-2.0-or-later"
 PKG_SITE="http://www.linux-nfs.org/"
 PKG_URL="https://www.kernel.org/pub/linux/utils/nfs-utils/${PKG_VERSION}/nfs-utils-${PKG_VERSION}.tar.xz"
-PKG_DEPENDS_TARGET="toolchain keyutils libevent libtirpc libxml2 rpcbind sqlite util-linux"
+PKG_DEPENDS_TARGET="toolchain keyutils libevent libnl libtirpc libxml2 rpcbind sqlite util-linux"
 PKG_LONGDESC="Linux NFS userland utility package"
 
 PKG_CONFIGURE_OPTS_TARGET="--disable-gss \
