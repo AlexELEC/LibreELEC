@@ -345,6 +345,7 @@ post_makeinstall_target() {
   cp ${PKG_DIR}/scripts/kodi-config ${INSTALL}/usr/lib/kodi
   cp ${PKG_DIR}/scripts/kodi-safe-mode ${INSTALL}/usr/lib/kodi
   cp ${PKG_DIR}/scripts/kodi.sh ${INSTALL}/usr/lib/kodi
+  cp ${PKG_DIR}/scripts/kodi-tvlink ${INSTALL}/usr/lib/kodi
 
   # Configure safe mode triggers - default 5 restarts within 900 seconds/15 minutes
   sed -e "s|@KODI_MAX_RESTARTS@|${KODI_MAX_RESTARTS:-5}|g" \

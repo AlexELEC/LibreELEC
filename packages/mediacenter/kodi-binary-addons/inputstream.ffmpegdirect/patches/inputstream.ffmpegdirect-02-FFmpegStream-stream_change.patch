@@ -51,9 +51,9 @@ diff -Naurp inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp inputstream.ffm
 +  if (m_newStreams > m_oldStreams+1 || m_newProgCount > m_oldProgCount)
 +  {
 +    // reset streams
-+    Log(LOGLEVEL_INFO, "Reset Stream: {%s}", m_streamUrl.c_str());
-+    Log(LOGLEVEL_INFO, "FFmpeg info: Old streams - {%d} / New streams - {%d}", m_oldStreams, m_newStreams);
-+    Log(LOGLEVEL_INFO, "FFmpeg info: Old programs - {%d} / New programs - {%d}", m_oldProgCount, m_newProgCount);
++    Log(LOGLEVEL_INFO, "Reset Stream: [%s]", m_streamUrl.c_str());
++    Log(LOGLEVEL_INFO, "Stream info: Old streams - [%d] / New streams - [%d]", m_oldStreams, m_newStreams);
++    Log(LOGLEVEL_INFO, "Stream info: Old programs - [%d] / New programs - [%d]", m_oldProgCount, m_newProgCount);
 +    m_bResetStream = true;
 +    m_oldStreams = 0;
 +    m_oldProgCount = 0;
