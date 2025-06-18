@@ -1,6 +1,6 @@
 diff -Naurp inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp inputstream.ffmpegdirect-patch/src/stream/FFmpegStream.cpp
 --- inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp	2025-04-01 16:11:20.000000000 +0000
-+++ inputstream.ffmpegdirect-patch/src/stream/FFmpegStream.cpp	2025-06-13 17:23:17.000000000 +0000
++++ inputstream.ffmpegdirect-patch/src/stream/FFmpegStream.cpp	2025-06-18 08:34:34.000000000 +0000
 @@ -147,6 +147,9 @@ FFmpegStream::FFmpegStream(IManageDemuxP
    m_bSup = false;
    m_speed = STREAM_PLAYSPEED_NORMAL;
@@ -36,7 +36,7 @@ diff -Naurp inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp inputstream.ffm
    // reset any timeout
    m_timeout.SetInfinite();
  
-@@ -1126,6 +1140,31 @@ double FFmpegStream::ConvertTimestamp(in
+@@ -1126,6 +1140,30 @@ double FFmpegStream::ConvertTimestamp(in
  
  bool FFmpegStream::IsProgramChange()
  {
@@ -52,8 +52,7 @@ diff -Naurp inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp inputstream.ffm
 +  {
 +    // reset streams
 +    Log(LOGLEVEL_INFO, "Reset Stream: [%s]", m_streamUrl.c_str());
-+    Log(LOGLEVEL_INFO, "Stream info: Old streams - [%d] / New streams - [%d]", m_oldStreams, m_newStreams);
-+    Log(LOGLEVEL_INFO, "Stream info: Old programs - [%d] / New programs - [%d]", m_oldProgCount, m_newProgCount);
++    Log(LOGLEVEL_INFO, "Reset info: old/new streams [%d/%d] | old/new programs [%d/%d]", m_oldStreams, m_newStreams, m_oldProgCount, m_newProgCount);
 +    m_bResetStream = true;
 +    m_oldStreams = 0;
 +    m_oldProgCount = 0;
@@ -70,7 +69,7 @@ diff -Naurp inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp inputstream.ffm
  
 diff -Naurp inputstream.ffmpegdirect/src/stream/FFmpegStream.h inputstream.ffmpegdirect-patch/src/stream/FFmpegStream.h
 --- inputstream.ffmpegdirect/src/stream/FFmpegStream.h	2025-04-01 16:11:20.000000000 +0000
-+++ inputstream.ffmpegdirect-patch/src/stream/FFmpegStream.h	2025-06-13 17:22:07.000000000 +0000
++++ inputstream.ffmpegdirect-patch/src/stream/FFmpegStream.h	2025-06-18 08:29:09.000000000 +0000
 @@ -196,6 +196,10 @@ private:
    std::string m_manifestType;
    bool m_opened;
