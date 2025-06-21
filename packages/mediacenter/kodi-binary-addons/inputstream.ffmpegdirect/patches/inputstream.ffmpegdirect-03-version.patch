@@ -6,7 +6,7 @@ diff -Naurp inputstream.ffmpegdirect/inputstream.ffmpegdirect/addon.xml.in input
  <addon
    id="inputstream.ffmpegdirect"
 -  version="22.1.1"
-+  version="22.10.2"
++  version="22.10.3"
    name="Inputstream FFmpeg Direct"
    provider-name="Ross Nicholson">
    <requires>@ADDON_DEPENDS@</requires>

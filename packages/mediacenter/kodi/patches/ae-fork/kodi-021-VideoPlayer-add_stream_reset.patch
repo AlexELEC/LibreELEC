@@ -11,7 +11,7 @@ diff -Naurp kodi/xbmc/addons/kodi-dev-kit/include/kodi/c-api/addon-instance/inpu
  extern "C"
 diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp kodi-patch/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
 --- kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp	2025-06-19 07:18:20.189630266 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp	2025-06-20 14:10:23.000000000 +0000
++++ kodi-patch/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp	2025-06-21 06:48:48.000000000 +0000
 @@ -209,6 +209,9 @@ CDVDDemuxFFmpeg::CDVDDemuxFFmpeg() : CDV
    m_bSup = false;
    m_speed = DVD_PLAYSPEED_NORMAL;
@@ -22,7 +22,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp kodi-patc
    m_pkt.result = -1;
    memset(&m_pkt.pkt, 0, sizeof(AVPacket));
    m_streaminfo = true; /* set to true if we want to look for streams before playback */
-@@ -1012,18 +1015,29 @@ DemuxPacket* CDVDDemuxFFmpeg::ReadIntern
+@@ -1012,16 +1015,27 @@ DemuxPacket* CDVDDemuxFFmpeg::ReadIntern
  
          if (IsProgramChange())
          {
@@ -38,19 +38,17 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp kodi-patc
 -          pPacket->demuxerId = m_demuxerId;
 +          CLog::Log(LOGINFO, "CDVDDemuxFFmpeg::Read(): stream change");
 +          av_dump_format(m_pFormatContext, 0, CURL::GetRedacted(m_pInput->GetFileName()).c_str(), 0);
- 
--          return pPacket;
++
 +          if (m_bResetStream) // reset stream
 +          {
 +            m_bResetStream = false;
 +            Reset();
-+            CreateStreams(m_program);
 +
++            CreateStreams(m_program);
 +            pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
 +            pPacket->iStreamId = DMX_SPECIALID_STREAMRESET;
 +            pPacket->demuxerId = m_demuxerId;
 +            CLog::Log(LOGINFO, "CDVDDemuxFFmpeg::Read(): immediate STREAMRESET");
-+            return pPacket;
 +          }
 +          else // update streams
 +          {
@@ -58,11 +56,10 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp kodi-patc
 +            pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
 +            pPacket->iStreamId = DMX_SPECIALID_STREAMCHANGE;
 +            pPacket->demuxerId = m_demuxerId;
-+            return pPacket;
 +          }
-         }
  
-         AVStream* stream = m_pFormatContext->streams[m_pkt.pkt.stream_index];
+           return pPacket;
+         }
 @@ -2064,6 +2078,29 @@ std::string CDVDDemuxFFmpeg::GetStreamCo
  
  bool CDVDDemuxFFmpeg::IsProgramChange()

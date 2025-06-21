@@ -1,6 +1,6 @@
 diff -Naurp inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp inputstream.ffmpegdirect-patch/src/stream/FFmpegStream.cpp
 --- inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp	2025-04-01 16:11:20.000000000 +0000
-+++ inputstream.ffmpegdirect-patch/src/stream/FFmpegStream.cpp	2025-06-18 08:34:34.000000000 +0000
++++ inputstream.ffmpegdirect-patch/src/stream/FFmpegStream.cpp	2025-06-21 06:47:53.000000000 +0000
 @@ -147,6 +147,9 @@ FFmpegStream::FFmpegStream(IManageDemuxP
    m_bSup = false;
    m_speed = STREAM_PLAYSPEED_NORMAL;
@@ -11,32 +11,42 @@ diff -Naurp inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp inputstream.ffm
    m_pkt.result = -1;
    memset(&m_pkt.pkt, 0, sizeof(AVPacket));
    m_streaminfo = true; /* set to true if we want to look for streams before playback */
-@@ -359,6 +362,9 @@ DEMUX_PACKET* FFmpegStream::DemuxRead()
+@@ -357,14 +360,28 @@ DEMUX_PACKET* FFmpegStream::DemuxRead()
+ 
+       if (IsProgramChange())
        {
++        Log(LOGLEVEL_INFO, "FFmpegStream::DemuxRead(): stream change");
          av_dump_format(m_pFormatContext, 0, CURL::GetRedacted(m_streamUrl).c_str(), 0);
  
-+        Dispose();
-+        Open(false);
+-        // update streams
+-        CreateStreams(m_program);
+-
+-        pPacket = m_demuxPacketManager->AllocateDemuxPacketFromInputStreamAPI(0);
+-        pPacket->iStreamId = DEMUX_SPECIALID_STREAMCHANGE;
+-        pPacket->demuxerId = m_demuxerId;
++        if (m_bResetStream) // reset stream
++        {
++          m_bResetStream = false;
++          Dispose();
++          Open(false);
 +
-         // update streams
-         CreateStreams(m_program);
++          CreateStreams(m_program);
++          pPacket = m_demuxPacketManager->AllocateDemuxPacketFromInputStreamAPI(0);
++          pPacket->iStreamId = DEMUX_SPECIALID_STREAMRESET;
++          pPacket->demuxerId = m_demuxerId;
++          Log(LOGLEVEL_INFO, "FFmpegStream::DemuxRead(): immediate STREAMRESET");
++        }
++        else // update streams
++        {
++          CreateStreams(m_program);
++          pPacket = m_demuxPacketManager->AllocateDemuxPacketFromInputStreamAPI(0);
++          pPacket->iStreamId = DEMUX_SPECIALID_STREAMCHANGE;
++          pPacket->demuxerId = m_demuxerId;
++        }
  
-@@ -800,6 +806,14 @@ bool FFmpegStream::Open(bool fileinfo)
-     skipCreateStreams = true;
-   }
- 
-+  if (m_bResetStream)
-+  {
-+    m_bResetStream = false;
-+    m_program = 0;
-+    m_checkTransportStream = true;
-+    skipCreateStreams = true;
-+  }
-+
-   // reset any timeout
-   m_timeout.SetInfinite();
- 
-@@ -1126,6 +1140,30 @@ double FFmpegStream::ConvertTimestamp(in
+         return pPacket;
+       }
+@@ -1126,6 +1143,29 @@ double FFmpegStream::ConvertTimestamp(in
  
  bool FFmpegStream::IsProgramChange()
  {
@@ -51,8 +61,7 @@ diff -Naurp inputstream.ffmpegdirect/src/stream/FFmpegStream.cpp inputstream.ffm
 +  if (m_newStreams > m_oldStreams+1 || m_newProgCount > m_oldProgCount)
 +  {
 +    // reset streams
-+    Log(LOGLEVEL_INFO, "Reset Stream: [%s]", m_streamUrl.c_str());
-+    Log(LOGLEVEL_INFO, "Reset info: old/new streams [%d/%d] | old/new programs [%d/%d]", m_oldStreams, m_newStreams, m_oldProgCount, m_newProgCount);
++    Log(LOGLEVEL_INFO, "FFmpegStream::DemuxRead() change info: old/new streams [%d/%d] | old/new programs [%d/%d]", m_oldStreams, m_newStreams, m_oldProgCount, m_newProgCount);
 +    m_bResetStream = true;
 +    m_oldStreams = 0;
 +    m_oldProgCount = 0;
