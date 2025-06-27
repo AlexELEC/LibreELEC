@@ -1,5 +1,5 @@
 # VERSION: set full version
-  DISTRO_VERSION="22.01-alpha-01"
+  DISTRO_VERSION="22.01-alpha-02"
 
 # OS_VERSION: OS Version
   OS_VERSION="13.0"
