@@ -118,8 +118,16 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/Interface/DemuxPacket.h kodi-patch/xbmc/
  extern "C"
 diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp
 --- kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2025-06-25 15:59:45.904734146 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2025-06-25 15:57:54.720502993 +0000
-@@ -1132,6 +1132,8 @@ void CVideoPlayer::OpenDefaultStreams(bo
++++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2025-06-28 13:33:28.000000000 +0000
+@@ -746,6 +746,7 @@ CVideoPlayer::CVideoPlayer(IPlayerCallba
+   m_HasVideo = false;
+   m_HasAudio = false;
+   m_UpdateStreamDetails = false;
++  m_lastStreamResetTime = std::chrono::steady_clock::now();
+ 
+   const int tenthsSeconds = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(
+       CSettings::SETTING_VIDEOPLAYER_QUEUETIMESIZE);
+@@ -1132,6 +1133,8 @@ void CVideoPlayer::OpenDefaultStreams(bo
    }
  }
  
@@ -128,7 +136,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
  bool CVideoPlayer::ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream)
  {
  
-@@ -1149,7 +1151,7 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
+@@ -1149,7 +1152,7 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
        stream = m_pSubtitleDemuxer->GetStream(packet->demuxerId, packet->iStreamId);
        if (!stream)
        {
@@ -137,13 +145,21 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
                    __FUNCTION__);
          return false;
        }
-@@ -1186,6 +1188,27 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
+@@ -1172,6 +1175,7 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
+     // stream changed, update and open defaults
+     if (packet->iStreamId == DMX_SPECIALID_STREAMCHANGE)
+     {
++      CLog::Log(LOGINFO, "VideoPlayer::ReadPacket(): received STREAMCHANGE");
+       m_SelectionStreams.Clear(STREAM_NONE, STREAM_SOURCE_DEMUX);
+       m_SelectionStreams.Update(m_pInputStream, m_pDemuxer.get());
+       m_pDemuxer->GetPrograms(m_programs);
+@@ -1186,6 +1190,27 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
  
        return true;
      }
 +    else if (packet->iStreamId == DMX_SPECIALID_STREAMRESET) // stream reset
 +    {
-+      CLog::Log(LOGINFO, "VideoPlayer::ReadPacket(): received DMX_SPECIALID_STREAMRESET");
++      CLog::Log(LOGINFO, "VideoPlayer::ReadPacket(): received STREAMRESET");
 +      m_SelectionStreams.Clear(STREAM_NONE, STREAM_SOURCE_DEMUX);
 +      m_SelectionStreams.Update(m_pInputStream, m_pDemuxer.get());
 +      m_pDemuxer->GetPrograms(m_programs);
@@ -165,18 +181,13 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
  
      UpdateCorrection(packet, m_offset_pts);
  
-@@ -1197,6 +1220,41 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
+@@ -1197,6 +1222,32 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
        stream = m_pDemuxer->GetStream(packet->demuxerId, packet->iStreamId);
        if (!stream)
        {
 +        if (m_pInputStream->IsRealtime())
 +        {
 +          ++bad_packet_count;
-+          CLog::Log(LOGWARNING, "VideoPlayer::ReadPacket(): Demux packet for unknown stream, skipping");
-+          CDVDDemuxUtils::FreeDemuxPacket(packet);
-+          packet = CDVDDemuxUtils::AllocateDemuxPacket(0);
-+          packet->iStreamId = -1;
-+
 +          const auto now = std::chrono::steady_clock::now();
 +          const auto minResetInterval = std::chrono::milliseconds(3000); // minimum 3 seconds between resets
 +
@@ -184,24 +195,20 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
 +          {
 +            if (now - m_lastStreamResetTime > minResetInterval)
 +            {
-+              CLog::Log(LOGWARNING, "VideoPlayer::ReadPacket(): Too many invalid packets, forcing stream reset");
++              CLog::Log(LOGINFO, "VideoPlayer::ReadPacket(): Too many invalid packets, forcing stream reset");
 +              m_pDemuxer->Abort();
 +              m_pDemuxer->Reset();
 +              m_pDemuxer->Flush();
 +
-+              // set DMX_SPECIALID_STREAMRESET
++              // reset stream
 +              DemuxPacket* reset = CDVDDemuxUtils::AllocateDemuxPacket(0);
 +              reset->iStreamId = DMX_SPECIALID_STREAMRESET;
 +              packet = reset;
++
 +              bad_packet_count = 0;
 +              m_lastStreamResetTime = now;
 +            }
-+            else
-+            {
-+              CLog::Log(LOGWARNING, "VideoPlayer::ReadPacket(): Invalid packets detected, but throttling STREAMRESET");
-+            }
 +          }
-+
 +          return true;
 +        }
          CLog::Log(LOGERROR, "{} - Error demux packet doesn't belong to a valid stream",
@@ -209,7 +216,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
          return false;
 diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.h kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h
 --- kodi/xbmc/cores/VideoPlayer/VideoPlayer.h	2025-06-18 22:03:26.000000000 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h	2025-06-25 15:57:54.716502756 +0000
++++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h	2025-06-28 12:57:57.000000000 +0000
 @@ -591,6 +591,8 @@ protected:
    bool m_HasVideo;
    bool m_HasAudio;
