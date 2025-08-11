@@ -35,7 +35,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp kodi-patc
 -
 -          pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
 -          pPacket->iStreamId = DMX_SPECIALID_STREAMCHANGE;
--          pPacket->demuxerId = m_demuxerId;
+-          pPacket->demuxerId = GetDemuxerId();
 +          CLog::Log(LOGINFO, "CDVDDemuxFFmpeg::Read(): stream change");
 +          av_dump_format(m_pFormatContext, 0, CURL::GetRedacted(m_pInput->GetFileName()).c_str(), 0);
 +
@@ -47,7 +47,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp kodi-patc
 +            CreateStreams(m_program);
 +            pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
 +            pPacket->iStreamId = DMX_SPECIALID_STREAMRESET;
-+            pPacket->demuxerId = m_demuxerId;
++            pPacket->demuxerId = GetDemuxerId();
 +            CLog::Log(LOGINFO, "CDVDDemuxFFmpeg::Read(): immediate STREAMRESET");
 +          }
 +          else // update streams
@@ -55,7 +55,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp kodi-patc
 +            CreateStreams(m_program);
 +            pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
 +            pPacket->iStreamId = DMX_SPECIALID_STREAMCHANGE;
-+            pPacket->demuxerId = m_demuxerId;
++            pPacket->demuxerId = GetDemuxerId();
 +          }
  
            return pPacket;
@@ -127,8 +127,8 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
  
    const int tenthsSeconds = CServiceBroker::GetSettingsComponent()->GetSettings()->GetInt(
        CSettings::SETTING_VIDEOPLAYER_QUEUETIMESIZE);
-@@ -1132,6 +1133,8 @@ void CVideoPlayer::OpenDefaultStreams(bo
-   }
+@@ -1139,6 +1140,8 @@ void CVideoPlayer::OpenDefaultStreams(bo
+     SynchronizeDemuxer();
  }
  
 +static int bad_packet_count = 0;
@@ -150,7 +150,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
      if (packet->iStreamId == DMX_SPECIALID_STREAMCHANGE)
      {
 +      CLog::Log(LOGINFO, "VideoPlayer::ReadPacket(): received STREAMCHANGE");
-       m_SelectionStreams.Clear(STREAM_NONE, STREAM_SOURCE_DEMUX);
+       m_SelectionStreams.Clear(StreamType::NONE, STREAM_SOURCE_DEMUX);
        m_SelectionStreams.Update(m_pInputStream, m_pDemuxer.get());
        m_pDemuxer->GetPrograms(m_programs);
 @@ -1186,6 +1190,27 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
@@ -160,7 +160,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
 +    else if (packet->iStreamId == DMX_SPECIALID_STREAMRESET) // stream reset
 +    {
 +      CLog::Log(LOGINFO, "VideoPlayer::ReadPacket(): received STREAMRESET");
-+      m_SelectionStreams.Clear(STREAM_NONE, STREAM_SOURCE_DEMUX);
++      m_SelectionStreams.Clear(StreamType::NONE, STREAM_SOURCE_DEMUX);
 +      m_SelectionStreams.Update(m_pInputStream, m_pDemuxer.get());
 +      m_pDemuxer->GetPrograms(m_programs);
 +      UpdateContent();
@@ -214,6 +214,44 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
          CLog::Log(LOGERROR, "{} - Error demux packet doesn't belong to a valid stream",
                    __FUNCTION__);
          return false;
+@@ -1477,6 +1528,28 @@ void CVideoPlayer::Prepare()
+   UpdatePlayState(0);
+ 
+   SetCaching(CACHESTATE_FLUSH);
++
++  // reset stream for inputstream addon
++  if (m_pInputStream->IsRealtime() &&
++      m_pInputStream->IsStreamType(DVDSTREAM_TYPE_ADDON))
++  {
++    CLog::Log(LOGINFO, "VideoPlayer::Prepare(): forced Live-stream reset");
++    m_SelectionStreams.Clear(StreamType::NONE, STREAM_SOURCE_DEMUX);
++    m_SelectionStreams.Update(m_pInputStream, m_pDemuxer.get());
++    m_pDemuxer->GetPrograms(m_programs);
++    UpdateContent();
++
++    CloseStream(m_CurrentVideo, false);
++    m_processInfo->ResetVideoCodecInfo();
++
++    CloseStream(m_CurrentAudio, false);
++    m_processInfo->ResetAudioCodecInfo();
++
++    OpenDefaultStreams(true);
++
++    m_HasVideo = (m_CurrentVideo.id >= 0);
++    m_HasAudio = (m_CurrentAudio.id >= 0);
++  }
+ }
+ 
+ void CVideoPlayer::Process()
+@@ -3724,7 +3797,7 @@ bool CVideoPlayer::OpenStream(CCurrentSt
+   CDemuxStream* stream = NULL;
+   CDVDStreamInfo hint;
+ 
+-  CLog::Log(LOGINFO, "Opening stream: {} source: {}", iStream, source);
++  //CLog::Log(LOGINFO, "Opening stream: {} source: {}", iStream, source);
+ 
+   if(STREAM_SOURCE_MASK(source) == STREAM_SOURCE_DEMUX_SUB)
+   {
 diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.h kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h
 --- kodi/xbmc/cores/VideoPlayer/VideoPlayer.h	2025-06-18 22:03:26.000000000 +0000
 +++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h	2025-06-28 12:57:57.000000000 +0000
