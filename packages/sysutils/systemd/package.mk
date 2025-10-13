@@ -10,6 +10,7 @@ PKG_SITE="http://www.freedesktop.org/wiki/Software/systemd"
 PKG_URL="https://github.com/systemd/systemd/archive/v${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_TARGET="meson:host ninja:host gcc:host libcap kmod util-linux entropy libidn2 wait-time-sync Jinja2:host"
 PKG_LONGDESC="A system and session manager for Linux, compatible with SysV and LSB init scripts."
+PKG_BUILD_FLAGS="+lto"
 
 PKG_MESON_OPTS_TARGET="--libdir=/usr/lib \
                        -Dsplit-bin=true \
@@ -158,6 +159,7 @@ post_makeinstall_target() {
   # remove systemd-creds
   safe_remove ${INSTALL}/usr/bin/systemd-creds
   safe_remove ${INSTALL}/usr/lib/tmpfiles.d/credstore.conf
+  safe_remove ${INSTALL}/usr/lib/tmpfiles.d/provision.conf
 
   # remove nspawn
   safe_remove ${INSTALL}/usr/bin/systemd-nspawn
@@ -309,6 +311,7 @@ post_install() {
   add_group input 104
   add_group render 105
   add_group sgx 106
+  add_group clock 107
 
   enable_service machine-id.service
   enable_service debugconfig.service
