@@ -1,6 +1,6 @@
 diff -Naurp inputstream.ffmpegdirect/src/stream/url/URL.cpp inputstream.ffmpegdirect-patch/src/stream/url/URL.cpp
---- inputstream.ffmpegdirect/src/stream/url/URL.cpp	2025-10-12 17:36:31.000000000 +0000
-+++ inputstream.ffmpegdirect-patch/src/stream/url/URL.cpp	2025-10-13 05:00:59.000000000 +0000
+--- inputstream.ffmpegdirect/src/stream/url/URL.cpp	2025-10-26 06:39:21.000000000 +0000
++++ inputstream.ffmpegdirect-patch/src/stream/url/URL.cpp	2025-11-07 06:11:20.000000000 +0000
 @@ -120,7 +120,10 @@ std::string URIGetFileName(const CURL& u
  
  bool HasSlashAtEnd(const std::string& strFile)
@@ -74,8 +74,8 @@ diff -Naurp inputstream.ffmpegdirect/src/stream/url/URL.cpp inputstream.ffmpegdi
  
  // bool CURL::IsLocal() const
 diff -Naurp inputstream.ffmpegdirect/src/stream/url/URL.h inputstream.ffmpegdirect-patch/src/stream/url/URL.h
---- inputstream.ffmpegdirect/src/stream/url/URL.h	2025-10-12 17:36:31.000000000 +0000
-+++ inputstream.ffmpegdirect-patch/src/stream/url/URL.h	2025-10-13 05:03:44.000000000 +0000
+--- inputstream.ffmpegdirect/src/stream/url/URL.h	2025-10-26 06:39:21.000000000 +0000
++++ inputstream.ffmpegdirect-patch/src/stream/url/URL.h	2025-11-07 06:13:17.000000000 +0000
 @@ -18,23 +18,20 @@
  
  namespace ffmpegdirect
