@@ -2,8 +2,8 @@
 # Copyright (C) 2018-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="stress-ng"
-PKG_VERSION="0.19.04"
-PKG_SHA256="3761ae901b2a81dcdb3f5363b8d98f288c03ae320a697b6d7ffef01a48845f05"
+PKG_VERSION="0.19.06"
+PKG_SHA256="054953145d7de36725a54636ea68975bb9ada06b4769878d25e556fab5804513"
 PKG_LICENSE="GPLv2"
 PKG_SITE="https://github.com/ColinIanKing/stress-ng"
 PKG_URL="https://github.com/ColinIanKing/stress-ng/archive/refs/tags/V${PKG_VERSION}.tar.gz"
