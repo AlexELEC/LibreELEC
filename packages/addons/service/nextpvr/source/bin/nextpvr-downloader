@@ -67,7 +67,7 @@ chmod +x ${ADDON_DIR}/lbin/comskip
 ln -s ${ADDON_DIR}/lbin/hdhomerun_config ${ADDON_DIR}/nextpvr-bin
 ln -s ${ADDON_DIR}/lib.private/libmediainfo.so ${ADDON_DIR}/nextpvr-bin
 
-unzip ${NEXTPVR_FILE} -d ${ADDON_DIR}/nextpvr-bin >/dev/null
+python -m zipfile --extract ${NEXTPVR_FILE} ${ADDON_DIR}/nextpvr-bin >/dev/null
 
 if [ "$(uname -m)" != "x86_64" ] && [ $(grep -c  RPi5 /etc/os-release) -eq 0 ] && \
    [ $(grep -c  RK3588 /etc/os-release) -eq 0 ] && [ $(grep -c  S928 /proc/cpuinfo) -eq 0 ]; then

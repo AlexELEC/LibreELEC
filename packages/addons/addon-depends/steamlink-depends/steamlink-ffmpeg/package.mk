@@ -2,100 +2,33 @@
 # Copyright (C) 2009-2016 Stephan Raue (stephan@openelec.tv)
 # Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
 
-PKG_NAME="ffmpeg"
-PKG_VERSION="7.1.1"
-PKG_SHA256="733984395e0dbbe5c046abda2dc49a5544e7e0e1e2366bba849222ae9e3a03b1"
+PKG_NAME="steamlink-ffmpeg"
+PKG_VERSION="de943d66dab18e89fc10c74459bea1d787edc49d" # tag: pi/7.1.2/rpi_28
+PKG_SHA256="c5059cbe7e59437b1577403f3a5dd2e264318d496af8b8762a4de86e295c068b"
 PKG_LICENSE="GPL-3.0-only"
 PKG_SITE="https://ffmpeg.org"
-PKG_URL="http://ffmpeg.org/releases/ffmpeg-${PKG_VERSION}.tar.xz"
-PKG_DEPENDS_TARGET="toolchain zlib bzip2 openssl speex libxml2"
+PKG_URL="https://github.com/jc-kynesim/rpi-ffmpeg/archive/${PKG_VERSION}.tar.gz"
+PKG_DEPENDS_TARGET="toolchain zlib bzip2 libdrm openssl libxml2"
 PKG_LONGDESC="FFmpeg is a complete, cross-platform solution to record, convert and stream audio and video."
-PKG_PATCH_DIRS="libreelec"
 
-case "${PROJECT}" in
-  Amlogic)
-    PKG_VERSION="6dbf87aefd7f491210abe1e043a1c228fa1439a0"
-    PKG_FFMPEG_BRANCH="test/7.1.1/main"
-    PKG_SHA256="66aead94c3884c9bc1ff2866f44d87f2f61d106bf203e1c723f83170b7e84297"
-    PKG_URL="https://github.com/jc-kynesim/rpi-ffmpeg/archive/${PKG_VERSION}.tar.gz"
-    ;;
-  Rockchip)
-    case "${DEVICE}" in
-      RK3288|RK3328|RK3399)
-        PKG_PATCH_DIRS+=" v4l2-request v4l2-drmprime vf-deinterlace-v4l2m2m"
-        ;;
-      RK356X|RK3576|RK3588)
-        PKG_VERSION="22a798e9733c38dab6f76e717fa3c5fd2773f27a"
-        PKG_FFMPEG_BRANCH="detlev-7.1"
-        PKG_SHA256="cc0e7edc3b2eec274f9152ae832ef0b2e0a127067dc61feee075c27220a7879d"
-        PKG_URL="https://gitlab.collabora.com/detlev/ffmpeg/-/archive/${PKG_VERSION}/ffmpeg-${PKG_VERSION}.tar.bz2"
-        PKG_PATCH_DIRS+=" vf-deinterlace-v4l2m2m"
-        ;;
-    esac
-    ;;
-  RPi)
-    PKG_FFMPEG_RPI="--disable-mmal --enable-sand"
-    PKG_PATCH_DIRS+=" rpi"
-    ;;
-  *)
-    PKG_PATCH_DIRS+=" v4l2-request v4l2-drmprime"
-    case "${PROJECT}" in
-      Allwinner | Rockchip)
-        PKG_PATCH_DIRS+=" vf-deinterlace-v4l2m2m"
-        ;;
-    esac
-    ;;
-esac
+PKG_FFMPEG_BRANCH="test/7.1.2/main"
 
 post_unpack() {
   # Fix FFmpeg version
-  if [ "${PROJECT}" = "Amlogic" ] || [ "${PROJECT}" = "Rockchip" ]; then
-    echo "${PKG_FFMPEG_BRANCH}-${PKG_VERSION:0:7}" >${PKG_BUILD}/VERSION
-  else
-    echo "${PKG_VERSION}" >${PKG_BUILD}/RELEASE
-  fi
+  echo "${PKG_FFMPEG_BRANCH}-${PKG_VERSION:0:7}" >${PKG_BUILD}/VERSION
 }
 
 # Dependencies
 get_graphicdrivers
 
-PKG_FFMPEG_HWACCEL="--enable-hwaccels"
-
 if [ "${V4L2_SUPPORT}" = "yes" ]; then
-  PKG_DEPENDS_TARGET+=" libdrm"
-  PKG_NEED_UNPACK+=" $(get_pkg_directory libdrm)"
-  PKG_FFMPEG_V4L2="--enable-v4l2_m2m --enable-libdrm"
-
-  if [ "${PROJECT}" = "Allwinner" -o "${PROJECT}" = "Rockchip" -o "${DEVICE}" = "iMX8" -o "${DEVICE}" = "RPi4" -o "${DEVICE}" = "RPi5" ]; then
-    PKG_V4L2_REQUEST="yes"
-  else
-    PKG_V4L2_REQUEST="no"
-  fi
-
-  if [ "${PKG_V4L2_REQUEST}" = "yes" ]; then
-    PKG_DEPENDS_TARGET+=" systemd"
-    PKG_NEED_UNPACK+=" $(get_pkg_directory systemd)"
-    PKG_FFMPEG_V4L2+=" --enable-libudev --enable-v4l2-request"
-  else
-    PKG_FFMPEG_V4L2+=" --disable-libudev --disable-v4l2-request"
-  fi
+  PKG_DEPENDS_TARGET+=" systemd"
+  PKG_NEED_UNPACK+=" $(get_pkg_directory systemd)"
+  PKG_FFMPEG_V4L2="--enable-v4l2_m2m --enable-libudev --enable-v4l2-request"
 else
   PKG_FFMPEG_V4L2="--disable-v4l2_m2m --disable-libudev --disable-v4l2-request"
 fi
 
-if [ "${VAAPI_SUPPORT}" = "yes" ]; then
-  PKG_DEPENDS_TARGET+=" libva"
-  PKG_NEED_UNPACK+=" $(get_pkg_directory libva)"
-  PKG_FFMPEG_VAAPI="--enable-vaapi"
-else
-  PKG_FFMPEG_VAAPI="--disable-vaapi"
-fi
-
-if [ "${DISPLAYSERVER}" != "x11" ]; then
-  PKG_DEPENDS_TARGET+=" libdrm"
-  PKG_NEED_UNPACK+=" $(get_pkg_directory libdrm)"
-  PKG_FFMPEG_VAAPI=" --enable-libdrm"
-fi
 
 if build_with_debug; then
   PKG_FFMPEG_DEBUG="--enable-debug --disable-stripping"
@@ -103,39 +36,10 @@ else
   PKG_FFMPEG_DEBUG="--disable-debug --enable-stripping"
 fi
 
-if target_has_feature neon; then
-  PKG_FFMPEG_FPU="--enable-neon"
-else
-  PKG_FFMPEG_FPU="--disable-neon"
-fi
-
-if [ "${TARGET_ARCH}" = "x86_64" ]; then
-  PKG_DEPENDS_TARGET+=" nasm:host"
-fi
-
-if target_has_feature "(neon|sse)"; then
-  PKG_DEPENDS_TARGET+=" dav1d"
-  PKG_NEED_UNPACK+=" $(get_pkg_directory dav1d)"
-  PKG_FFMPEG_AV1="--enable-libdav1d"
-else
-  PKG_FFMPEG_AV1="--disable-libdav1d"
-fi
-
 pre_configure_target() {
   cd ${PKG_BUILD}
   rm -rf .${TARGET_NAME}
 }
-
-if [ "${FFMPEG_TESTING}" = "yes" ]; then
-  PKG_FFMPEG_TESTING="--enable-encoder=wrapped_avframe --enable-muxer=null"
-  PKG_FFMPEG_TESTING+=" --enable-encoder=rawvideo --enable-muxer=rawvideo"
-  PKG_FFMPEG_TESTING+=" --enable-muxer=image2 --enable-muxer=md5 --enable-muxer=framemd5"
-  if [ "${PROJECT}" = "RPi" ]; then
-    PKG_FFMPEG_TESTING+=" --enable-vout-drm --enable-outdev=vout_drm"
-  fi
-else
-  PKG_FFMPEG_TESTING="--disable-programs"
-fi
 
 configure_target() {
   ./configure --prefix="/usr" \
@@ -182,9 +86,11 @@ configure_target() {
               --enable-swscale-alpha \
               --disable-small \
               ${PKG_FFMPEG_V4L2} \
-              ${PKG_FFMPEG_VAAPI} \
+              --disable-vaapi \
+              --enable-libdrm \
               --disable-vdpau \
-              ${PKG_FFMPEG_RPI} \
+              --disable-mmal \
+              --enable-sand \
               --enable-runtime-cpudetect \
               --disable-hardcoded-tables \
               --disable-encoders \
@@ -193,7 +99,7 @@ configure_target() {
               --enable-encoder=wmav2 \
               --enable-encoder=mjpeg \
               --enable-encoder=png \
-              ${PKG_FFMPEG_HWACCEL} \
+              --enable-hwaccels \
               --disable-muxers \
               --enable-muxer=spdif \
               --enable-muxer=adts \
@@ -221,8 +127,8 @@ configure_target() {
               --disable-libmp3lame \
               --disable-libopenjpeg \
               --disable-librtmp \
-              ${PKG_FFMPEG_AV1} \
-              --enable-libspeex \
+              --disable-libdav1d \
+              --disable-libspeex \
               --disable-libtheora \
               --disable-libvo-amrwbenc \
               --disable-libvorbis \
@@ -234,9 +140,9 @@ configure_target() {
               --enable-zlib \
               --enable-asm \
               --disable-altivec \
-              ${PKG_FFMPEG_FPU} \
+              --enable-neon \
               --disable-symver \
-              ${PKG_FFMPEG_TESTING}
+              --disable-programs
 }
 
 post_makeinstall_target() {
