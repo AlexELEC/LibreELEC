@@ -3,8 +3,8 @@
 # Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="kodi"
-PKG_VERSION="5954dbce36eb99bd103329961fe3a622d8f45c5d"
-PKG_SHA256="0dbcfc06c0f7bcbacf20dd6e431ce9296ad4aaf0106afdb2b19319fc89b77b40"
+PKG_VERSION="665a76031976fb37ddbcde6cec567d62dc1871fe"
+PKG_SHA256="209559a1eafd5384a8e69b5c9588dbd827ebaa5cf64c3575fec78452c9620e99"
 PKG_LICENSE="GPL"
 PKG_SITE="http://www.kodi.tv"
 PKG_URL="https://github.com/xbmc/xbmc/archive/${PKG_VERSION}.tar.gz"
@@ -228,7 +228,7 @@ configure_package() {
     KODI_ARCH="-DWITH_ARCH=${TARGET_ARCH}"
   fi
 
-  if [ "${PROJECT}" = "Allwinner" -o "${PROJECT}" = "Rockchip" -o "${PROJECT}" = "RPi" ]; then
+  if [ "${PROJECT}" = "Allwinner" -o "${PROJECT}" = "Rockchip" ]; then
     PKG_PATCH_DIRS+=" drmprime-filter"
   fi
 
