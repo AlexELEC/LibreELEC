@@ -307,12 +307,12 @@ diff --git a/xbmc/windowing/gbm/WinSystemGbmGLContext.cpp b/xbmc/windowing/gbm/W
 index 65878a7e221d..063b6a213bd4 100644
 --- a/xbmc/windowing/gbm/WinSystemGbmGLContext.cpp
 +++ b/xbmc/windowing/gbm/WinSystemGbmGLContext.cpp
-@@ -121,37 +121,13 @@ void CWinSystemGbmGLContext::PresentRender(bool rendered, bool videoLayer)
-   {
+@@ -122,38 +122,14 @@ void CWinSystemGbmGLContext::PresentRender(bool rendered, bool videoLayer)
+     bool async = !videoLayer && m_eglFence;
      if (rendered)
      {
 -#if defined(EGL_ANDROID_native_fence_sync) && defined(EGL_KHR_fence_sync)
--      if (m_eglFence)
+-      if (async)
 -      {
 -        int fd = m_DRM->TakeOutFenceFd();
 -        if (fd != -1)
@@ -332,7 +332,7 @@ index 65878a7e221d..063b6a213bd4 100644
        }
 -
 -#if defined(EGL_ANDROID_native_fence_sync) && defined(EGL_KHR_fence_sync)
--      if (m_eglFence)
+-      if (async)
 -      {
 -        int fd = m_eglFence->FlushFence();
 -        m_DRM->SetInFenceFd(fd);
@@ -341,7 +341,8 @@ index 65878a7e221d..063b6a213bd4 100644
 -      }
 -#endif
      }
--    CWinSystemGbm::FlipPage(rendered, videoLayer, static_cast<bool>(m_eglFence));
+ 
+-    CWinSystemGbm::FlipPage(rendered, videoLayer, async);
 +    CWinSystemGbm::FlipPage(rendered, videoLayer);
  
      if (m_dispReset && m_dispResetTimer.IsTimePast())
@@ -350,12 +351,12 @@ diff --git a/xbmc/windowing/gbm/WinSystemGbmGLESContext.cpp b/xbmc/windowing/gbm
 index 7538a6a69473..f26d0f9c5d32 100644
 --- a/xbmc/windowing/gbm/WinSystemGbmGLESContext.cpp
 +++ b/xbmc/windowing/gbm/WinSystemGbmGLESContext.cpp
-@@ -130,38 +130,13 @@ void CWinSystemGbmGLESContext::PresentRender(bool rendered, bool videoLayer)
-   {
+@@ -131,38 +131,13 @@ void CWinSystemGbmGLESContext::PresentRender(bool rendered, bool videoLayer)
+     bool async = !videoLayer && m_eglFence;
      if (rendered)
      {
 -#if defined(EGL_ANDROID_native_fence_sync) && defined(EGL_KHR_fence_sync)
--      if (m_eglFence)
+-      if (async)
 -      {
 -        int fd = m_DRM->TakeOutFenceFd();
 -        if (fd != -1)
@@ -375,7 +376,7 @@ index 7538a6a69473..f26d0f9c5d32 100644
        }
 -
 -#if defined(EGL_ANDROID_native_fence_sync) && defined(EGL_KHR_fence_sync)
--      if (m_eglFence)
+-      if (async)
 -      {
 -        int fd = m_eglFence->FlushFence();
 -        m_DRM->SetInFenceFd(fd);
@@ -385,7 +386,7 @@ index 7538a6a69473..f26d0f9c5d32 100644
 -#endif
      }
 -
--    CWinSystemGbm::FlipPage(rendered, videoLayer, static_cast<bool>(m_eglFence));
+-    CWinSystemGbm::FlipPage(rendered, videoLayer, async);
 +    CWinSystemGbm::FlipPage(rendered, videoLayer);
  
      if (m_dispReset && m_dispResetTimer.IsTimePast())
