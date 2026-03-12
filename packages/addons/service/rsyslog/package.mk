@@ -4,12 +4,13 @@
 PKG_NAME="rsyslog"
 PKG_VERSION="8.2602.0"
 PKG_SHA256="4fe5256cea046d77546d36042d090e384184bc24041ecda5d03c03d35d1eabbb"
-PKG_REV="2"
+PKG_REV="0"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/rsyslog"
 PKG_URL="https://www.rsyslog.com/files/download/rsyslog/${PKG_NAME}-${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_TARGET="toolchain protobuf-c:host curl libestr libfastjson libgcrypt liblogging liblognorm librelp protobuf-c snappy util-linux zlib"
+PKG_DEPENDS_CONFIG="protobuf-c snappy libyaml"
 PKG_SECTION="service"
 PKG_SHORTDESC="Rsyslog: a rocket-fast system for log processing."
 PKG_LONGDESC="Rsyslog (${PKG_VERSION}) offers high-performance, great security features and a modular design."
@@ -31,7 +32,6 @@ export LIBGCRYPT_CONFIG="${SYSROOT_PREFIX}/usr/bin/libgcrypt-config"
 
 pre_configure_target() {
   CFLAGS+=" -fcommon"
-  export PKG_CONFIG_PATH="$(get_install_dir protobuf-c)/usr/lib/pkgconfig:$(get_install_dir snappy)/usr/lib/pkgconfig:$(get_install_dir libyaml)/usr/lib/pkgconfig:${PKG_CONFIG_PATH}"
 }
 
 post_configure_target() {

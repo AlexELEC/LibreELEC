@@ -3,8 +3,8 @@
 # Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="kodi"
-PKG_VERSION="532c26aa5db0ed440a40527880755cd12382db3d"
-PKG_SHA256="97a3dca4e77a443c808a7bc97e6aea953ffb056198561de540c47f920ef64342"
+PKG_VERSION="22.0a3-Piers"
+PKG_SHA256="92e3fa6b80581b27defabfa1417c0aae13bfa9e2579e920d52ffe86c06ed7edb"
 PKG_LICENSE="GPL"
 PKG_SITE="http://www.kodi.tv"
 PKG_URL="https://github.com/xbmc/xbmc/archive/${PKG_VERSION}.tar.gz"
@@ -488,7 +488,6 @@ post_install() {
   enable_service kodi-reboot.service
   enable_service kodi-waitonnetwork.service
   enable_service kodi.service
-  enable_service kodi-lirc-suspend.service
   enable_service kodi-cleanpackagecache.service
   enable_service kodi-tvlink.service
 }
