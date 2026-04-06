@@ -1,0 +1,16 @@
+--- a/src/basic/terminal-util.c	2026-04-02 07:24:22.234148005 +0000
++++ b/src/basic/terminal-util_no_ansi_reset.c	2026-04-02 07:24:48.759915430 +0000
+@@ -1013,9 +1013,13 @@
+         } else
+                 (void) terminal_fix_size(fd, fd);
+ 
++        /* TEST: disable ANSI terminal reset here to check whether it clears the boot splash
++         * immediately after switch_root/systemd startup on Generic x86_64. */
++        /*
+         r = terminal_reset_ansi_seq(fd);
+         if (r < 0)
+                 log_warning_errno(r, "Failed to reset /dev/console using ANSI sequences, ignoring: %m");
++        */
+ }
+ 
+ int lock_dev_console(void) {

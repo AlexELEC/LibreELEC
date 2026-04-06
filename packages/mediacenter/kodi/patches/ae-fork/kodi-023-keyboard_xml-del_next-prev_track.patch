@@ -1,0 +1,16 @@
+diff -Naurp kodi/system/keymaps/keyboard.xml kodi-patch/system/keymaps/keyboard.xml
+--- kodi/system/keymaps/keyboard.xml	2025-06-06 12:41:25.158232165 +0000
++++ kodi-patch/system/keymaps/keyboard.xml	2025-06-06 12:46:22.000000000 +0000
+@@ -129,8 +129,10 @@
+       <volume_mute>Mute</volume_mute>
+       <volume_down>VolumeDown</volume_down>
+       <volume_up>VolumeUp</volume_up>
+-      <next_track>SkipNext</next_track>
+-      <prev_track>SkipPrevious</prev_track>
++      <!-- <next_track>SkipNext</next_track> -->
++      <!-- <prev_track>SkipPrevious</prev_track> -->
++      <next_track></next_track>
++      <prev_track></prev_track>
+       <stop>Stop</stop>
+       <play_pause>PlayPause</play_pause>
+       <play_pause mod="longpress">Info</play_pause>
