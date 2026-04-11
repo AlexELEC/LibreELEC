@@ -2,14 +2,14 @@
 # Copyright (C) 2019-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="pvr.waipu"
-PKG_VERSION="22.8.0-Piers"
-PKG_SHA256="e3c473ad4b6d9e3e094d08c25ce8b382652503b4477f0676d319e0527d81d40f"
+PKG_VERSION="22.9.1-Piers"
+PKG_SHA256="8d3c749942ead9edf3d54f568622df113aa492dcb9845d65b79ae84ee1dc07fa"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/flubshi/pvr.waipu"
 PKG_URL="https://github.com/flubshi/pvr.waipu/archive/${PKG_VERSION}.tar.gz"
-PKG_DEPENDS_TARGET="toolchain kodi-platform rapidjson"
+PKG_DEPENDS_TARGET="toolchain kodi-platform nlohmann-json"
 PKG_SECTION=""
 PKG_SHORTDESC="pvr.waipu"
 PKG_LONGDESC="pvr.waipu"
