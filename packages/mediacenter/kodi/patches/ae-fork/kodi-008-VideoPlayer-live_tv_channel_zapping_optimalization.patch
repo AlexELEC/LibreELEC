@@ -1,22 +1,12 @@
-From bd8c702ca7b90628e47087c4f9a4d6848a11f1c7 Mon Sep 17 00:00:00 2001
-From: afl1 <afl2001@gmail.com>
-Date: Sun, 5 May 2019 13:49:37 +0200
-Subject: [PATCH] VideoPlayer: live tv channel zapping optimalization
-
----
- xbmc/cores/VideoPlayer/VideoPlayer.cpp | 36 ++++++++++++++------------
- 1 file changed, 19 insertions(+), 17 deletions(-)
-
-diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
-index 4a761cb2c6b..5d378930590 100644
---- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp
-+++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+--- kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-04-18 23:53:22.000000000 +0000
++++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-04-19 06:02:55.000000000 +0000
 @@ -2136,15 +2136,17 @@ void CVideoPlayer::HandlePlaySpeed()
-       // care for live streams
-       else if (m_pInputStream->IsRealtime())
-       {
--        if (m_CurrentAudio.id >= 0)
-+        if (m_CurrentAudio.id >= 0 && m_clock.GetClock() > DVD_MSEC_TO_TIME(1000))
+         // so GetLevel() stays near 0. This triggers SetSpeedAdjust(-0.05) immediately
+         // and the >10 restore threshold is never reached, causing permanent clock
+         // drift at -50ms/s and persistent A/V sync oscillation.
+-        if (m_CurrentAudio.id >= 0 && !IsPassthrough())
++        if (m_CurrentAudio.id >= 0 && !IsPassthrough() && m_clock.GetClock() > DVD_MSEC_TO_TIME(1000))
          {
            double adjust = -1.0; // a unique value
 -          if (m_clock.GetSpeedAdjust() >= 0 && m_VideoPlayerAudio->GetLevel() < 5)
@@ -44,7 +34,7 @@ index 4a761cb2c6b..5d378930590 100644
                   (m_CurrentVideo.packets == 0 && m_CurrentAudio.packets > threshold) ||
                   (!m_VideoPlayerAudio->AcceptsData() && m_processInfo->GetLevelVQ() < 10);
      bool audio = m_CurrentAudio.id < 0 || (m_CurrentAudio.syncState == IDVDStreamPlayer::SYNC_WAITSYNC) ||
-@@ -2193,11 +2195,11 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -2191,11 +2193,11 @@ void CVideoPlayer::HandlePlaySpeed()
      {
        double clock = 0;
        if (m_CurrentAudio.syncState == IDVDStreamPlayer::SYNC_WAITSYNC)
@@ -60,7 +50,7 @@ index 4a761cb2c6b..5d378930590 100644
  
        if (m_CurrentVideo.starttime != DVD_NOPTS_VALUE && m_CurrentVideo.packets > 0 &&
            m_playSpeed == DVD_PLAYSPEED_PAUSE)
-@@ -2207,26 +2209,26 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -2205,26 +2207,26 @@ void CVideoPlayer::HandlePlaySpeed()
        else if (m_CurrentAudio.starttime != DVD_NOPTS_VALUE && m_CurrentAudio.packets > 0)
        {
          if (m_pInputStream->IsRealtime())
