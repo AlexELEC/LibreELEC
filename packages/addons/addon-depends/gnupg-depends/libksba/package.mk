@@ -12,6 +12,4 @@ PKG_LONGDESC="A library to work with X.509 certificates"
 PKG_BUILD_FLAGS="-sysroot"
 
 PKG_CONFIGURE_OPTS_TARGET="--disable-doc \
-                           --disable-rpath \
-                           --disable-tests \
                            --with-libgpg-error-prefix=${SYSROOT_PREFIX}/usr"

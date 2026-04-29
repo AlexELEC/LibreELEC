@@ -90,6 +90,12 @@ if [ ! -f "${PACKAGE_LIST}" ]; then
   die "Package not found: ${pkgname}"
 fi
 
+if [[ $(type -t create_branch) == function ]]; then
+  # if the package is meant to be updated in a branch - do so
+  create_branch
+  echo $currentbranch
+fi
+
 #https://stackoverflow.com/questions/8063228/check-if-a-variable-exists-in-a-list-in-bash
 for pkgmk in ${PACKAGE_LIST}; do
   prevpkgver=$(grep "^PKG_VERSION=" "${pkgmk}" | sed 's/PKG_VERSION="//' | sed 's/"//')
@@ -97,7 +103,11 @@ for pkgmk in ${PACKAGE_LIST}; do
     update_package
   elif [[ ! $(grep "^PKG_VERSION=.*get_pkg_version" "${pkgmk}") ]]; then
     # PKG_VERSION does not contain code, proceed
-    sed -e "s|^PKG_VERSION=.*|PKG_VERSION=\"${pkgver}\"|" -i "${pkgmk}"
+    if [[ "${pkgname}" == "linux" ]]; then
+      sed -e "/^\s*\*)/,/^\s*;;/ s|^\(\s*PKG_VERSION=\).*|\1\"${pkgver}\"|" -i "${pkgmk}"
+    else
+      sed -e "s|^PKG_VERSION=.*|PKG_VERSION=\"${pkgver}\"|" -i "${pkgmk}"
+    fi
     CHANGE_HASH=yes scripts/get ${pkgname} || {
       sed -e "s|^PKG_VERSION=.*|PKG_VERSION=\"${prevpkgver}\"|" -i "${pkgmk}"
       die "Package version not found: ${pkgname}"
@@ -142,3 +152,8 @@ for pkgmk in ${PACKAGE_LIST}; do
 
   [[ ! -v parentpkg && $(type -t custom_post_commit) == function ]] && custom_post_commit || true
 done
+
+if [[ $(type -t create_branch) == function ]]; then
+  push_branch
+  create_pr
+fi
