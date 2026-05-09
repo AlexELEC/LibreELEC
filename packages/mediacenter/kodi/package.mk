@@ -3,8 +3,8 @@
 # Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="kodi"
-PKG_VERSION="1671a6091b96013f4043d28845d7e367b6a51f04"
-PKG_SHA256="9e173c283c34ea5754f469162fdc50df7d9163676abb5e5b0839d403e6c0efa5"
+PKG_VERSION="27dd4ca621b00548b4389c76ea136279f3894681"
+PKG_SHA256="5464872e114a53c14cbf17d4693d4d63e9ccd1818b08f3ecc04b66f9949cab78"
 PKG_LICENSE="GPL"
 PKG_SITE="http://www.kodi.tv"
 PKG_URL="https://github.com/xbmc/xbmc/archive/${PKG_VERSION}.tar.gz"
@@ -13,6 +13,10 @@ PKG_DEPENDS_UNPACK="commons-lang3 commons-text groovy"
 PKG_DEPENDS_HOST="toolchain"
 PKG_LONGDESC="A free and open source cross-platform media player."
 PKG_BUILD_FLAGS="+speed"
+
+if [ "${TARGET_ARCH}" = "arm" ]; then
+  PKG_BUILD_FLAGS+=" -gold"
+fi
 
 configure_package() {
   # Single threaded LTO is very slow so rely on Kodi for parallel LTO support
@@ -316,6 +320,9 @@ makeinstall_host() {
 
 pre_configure_target() {
   export LIBS="${LIBS} -lncurses"
+  if [ "${TARGET_ARCH}" = "arm" ]; then
+    LDFLAGS+=" -Wl,--allow-shlib-undefined"
+  fi
 }
 
 post_makeinstall_target() {
