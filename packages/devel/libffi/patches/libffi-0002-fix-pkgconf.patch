@@ -11,7 +11,7 @@ diff --git a/libffi.pc.in b/libffi.pc.in
 index 1477a66..1dd4ebd 100644
 --- a/libffi.pc.in
 +++ b/libffi.pc.in
-@@ -7,5 +7,5 @@ includedir=@includedir@/@PACKAGE_NAME@
+@@ -7,5 +7,5 @@ includedir=@includedir@
  Name: @PACKAGE_NAME@
  Description: Library supporting Foreign Function Interfaces
  Version: @PACKAGE_VERSION@
