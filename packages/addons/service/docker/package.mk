@@ -2,7 +2,7 @@
 # Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="docker"
-PKG_REV="1"
+PKG_REV="2"
 PKG_ARCH="any"
 PKG_LICENSE="ASL"
 PKG_SITE="http://www.docker.com/"
@@ -14,6 +14,7 @@ PKG_TOOLCHAIN="manual"
 
 PKG_IS_ADDON="yes"
 PKG_ADDON_NAME="Docker"
+PKG_ADDON_ICON_SIZE="350"
 PKG_ADDON_TYPE="xbmc.service"
 
 addon() {

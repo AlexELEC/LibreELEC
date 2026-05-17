@@ -1,0 +1,17 @@
+From 6cadc2e38b1cefe879fb97fd192e39cb102c4d3c Mon Sep 17 00:00:00 2001
+From: Radostan Riedel <raybuntu@gmail.com>
+Date: Wed, 18 Oct 2017 19:42:55 +0000
+Subject: [PATCH] disable host cflags
+
+diff --git a/nspr/config/autoconf.mk.in b/nspr/config/autoconf.mk.in
+--- a/nspr/config/autoconf.mk.in
++++ b/nspr/config/autoconf.mk.in
+@@ -104,7 +104,7 @@ DSO_LDOPTS	= @DSO_LDOPTS@
+ RESOLVE_LINK_SYMBOLS = @RESOLVE_LINK_SYMBOLS@
+ 
+ HOST_CC		= @HOST_CC@
+-HOST_CFLAGS	= @HOST_CFLAGS@
++#HOST_CFLAGS	= @HOST_CFLAGS@
+ HOST_LDFLAGS	= @HOST_LDFLAGS@
+ 
+ DEFINES		= @DEFINES@ @DEFS@
