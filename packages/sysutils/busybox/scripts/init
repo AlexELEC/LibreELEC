@@ -347,6 +347,9 @@ load_splash() {
         ply-image $SPLASHIMAGE > /dev/null 2>&1
       fi
 
+      # set splash visible
+      printf ' \r' >&2
+
       debug_msg "Framebuffer vertical res: $vres"
       debug_msg "Framebuffer splash image: $SPLASHIMAGE"
     fi
