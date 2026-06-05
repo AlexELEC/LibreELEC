@@ -22,6 +22,10 @@ pre_configure_target() {
   rm -rf .${TARGET_NAME}
 }
 
+post_configure_target() {
+  libtool_remove_rpath libtool
+}
+
 makeinstall_target() {
   mkdir -p "${INSTALL}/usr/sbin/"
     cp -PR utils/mount/mount.nfs "${INSTALL}/usr/sbin/"
