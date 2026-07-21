@@ -1,7 +1,7 @@
 diff -Naurp kodi/system/keymaps/keyboard.xml kodi-patch/system/keymaps/keyboard.xml
---- kodi/system/keymaps/keyboard.xml	2026-06-22 16:10:36.741601377 +0000
-+++ kodi-patch/system/keymaps/keyboard.xml	2026-06-22 16:20:27.000000000 +0000
-@@ -57,6 +57,7 @@
+--- kodi/system/keymaps/keyboard.xml	2026-07-16 12:21:10.000000000 +0000
++++ kodi-patch/system/keymaps/keyboard.xml	2026-07-21 10:45:35.000000000 +0000
+@@ -61,6 +61,7 @@
        <m>Menu</m>
        <n mod="ctrl">ActivateWindow(PlayerControls)</n>
        <s>ActivateWindow(ShutdownMenu)</s>
@@ -9,7 +9,7 @@ diff -Naurp kodi/system/keymaps/keyboard.xml kodi-patch/system/keymaps/keyboard.
        <s mod="alt">ActivateWindow(Settings)</s>
        <escape>PreviousMenu</escape>
        <escape mod="longpress">Back</escape>
-@@ -111,6 +112,11 @@
+@@ -119,6 +120,11 @@
        <j>ActivateWindow(RadioChannels)</j>
        <k>ActivateWindow(TVRecordings)</k>
        <b>ActivateWindow(TVTimers)</b>
@@ -21,20 +21,26 @@ diff -Naurp kodi/system/keymaps/keyboard.xml kodi-patch/system/keymaps/keyboard.
        <!-- PVR -->
        <red>ActivateWindow(TVChannels)</red>
        <green>ActivateWindow(Videos)</green>
-@@ -130,8 +136,10 @@
+@@ -139,10 +145,14 @@
        <volume_mute>Mute</volume_mute>
        <volume_down>VolumeDown</volume_down>
        <volume_up>VolumeUp</volume_up>
 -      <next_track>SkipNext</next_track>
 -      <prev_track>SkipPrevious</prev_track>
+-      <next>SkipNext</next>
+-      <previous>SkipPrevious</previous>
 +      <!-- <next_track>SkipNext</next_track> -->
 +      <!-- <prev_track>SkipPrevious</prev_track> -->
 +      <next_track></next_track>
 +      <prev_track></prev_track>
++      <!-- <next>SkipNext</next> -->
++      <!-- <previous>SkipPrevious</previous> -->
++      <next></next>
++      <previous></previous>
        <stop>Stop</stop>
        <play_pause>PlayPause</play_pause>
        <play_pause mod="longpress">Info</play_pause>
-@@ -176,6 +184,7 @@
+@@ -218,6 +228,7 @@
        <k mod="ctrl,shift">ReloadKeymaps</k>
        <d mod="ctrl,shift">ToggleDebug</d>
        <r mod="ctrl,shift">ToggleDirtyRegionVisualization</r>
@@ -42,7 +48,7 @@ diff -Naurp kodi/system/keymaps/keyboard.xml kodi-patch/system/keymaps/keyboard.
        <f11>HDRToggle</f11>
      </keyboard>
    </global>
-@@ -379,6 +388,7 @@
+@@ -421,6 +432,7 @@
        <o>PlayerProcessInfo</o>
        <o mod="ctrl,shift">PlayerDebug</o>
        <o mod="alt">PlayerDebugVideo</o>
@@ -50,7 +56,7 @@ diff -Naurp kodi/system/keymaps/keyboard.xml kodi-patch/system/keymaps/keyboard.
        <z>AspectRatio</z>
        <zoom>AspectRatio</zoom>
        <t>ShowSubtitles</t>
-@@ -395,11 +405,11 @@
+@@ -437,11 +449,13 @@
        <down mod="longpress">NextSubtitle</down>
        <left mod="alt">PlayerControl(tempodown)</left>
        <right mod="alt">PlayerControl(tempoup)</right>
@@ -61,10 +67,12 @@ diff -Naurp kodi/system/keymaps/keyboard.xml kodi-patch/system/keymaps/keyboard.
        <escape>Fullscreen</escape>
        <c>Playlist</c>
 -      <v>ActivateWindow(Teletext)</v>
++      <!-- <v>ActivateWindow(Teletext)</v> -->
++      <v></v>
        <v mod="ctrl">DialogSelectVideo</v>
        <text>ActivateWindow(Teletext)</text>
        <up mod="ctrl">SubtitleShiftUp</up>
-@@ -611,7 +621,7 @@
+@@ -653,7 +667,7 @@
        <subtitle>NextSubtitle</subtitle>
        <subtitle mod="longpress">ShowSubtitles</subtitle>
        <l>DialogSelectSubtitle</l>
@@ -73,7 +81,7 @@ diff -Naurp kodi/system/keymaps/keyboard.xml kodi-patch/system/keymaps/keyboard.
        <escape>Fullscreen</escape>
        <return>Select</return>
        <enter>Select</enter>      <!-- backspace>Fullscreen</backspace -->
-@@ -718,10 +728,10 @@
+@@ -760,10 +774,10 @@
    </NumericInput>
    <FullscreenLiveTV>
      <keyboard>
@@ -88,7 +96,7 @@ diff -Naurp kodi/system/keymaps/keyboard.xml kodi-patch/system/keymaps/keyboard.
        <return>OSD</return>
        <enter>OSD</enter>
        <ok>OSD</ok>
-@@ -730,12 +740,14 @@
+@@ -772,12 +786,14 @@
        <return mod="longpress">ActivateWindow(PVROSDChannels)</return>
        <enter mod="longpress">ActivateWindow(PVROSDChannels)</enter>
        <ok mod="longpress">ActivateWindow(PVROSDChannels)</ok>
