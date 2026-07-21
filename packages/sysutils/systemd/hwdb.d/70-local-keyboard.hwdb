@@ -15,6 +15,10 @@ evdev:input:b0005v0957p1001*
  KEYBOARD_KEY_70045=volumeup
  KEYBOARD_KEY_70069=volumedown
 
+# Gmyle / Hama Vista Remote Control
+evdev:input:b0003v05A4p9881*
+ KEYBOARD_KEY_90002=info # "i" and "right mouse" buttons, originally BTN_RIGHT
+
 # all osmc remotes
 evdev:input:b0003v2252p17*
  KEYBOARD_KEY_7000c=kpleftparen
@@ -74,3 +78,4 @@ evdev:input:b0005v5A44p5A44*
  KEYBOARD_KEY_c00e2=volume_mute
  KEYBOARD_KEY_c00e9=period #vol-up
  KEYBOARD_KEY_c00ea=comma #vol-down
+
