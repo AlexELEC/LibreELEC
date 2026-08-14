@@ -3,8 +3,8 @@
 # Copyright (C) 2017-present Team LibreELEC (https://libreelec.tv)
 
 PKG_NAME="kodi"
-PKG_VERSION="77a9dc26c56d61cd7be76a9ed30b0ff1c1e2240b"
-PKG_SHA256="eb124678b09aeeac92127ec0c03008c2d8b590da16ab0a7b957cfc132ad4b7bc"
+PKG_VERSION="62a5ed59c034070120301e243547a9058874572d"
+PKG_SHA256="a10f8cf2d6765234595f3bb7b6454bcce4e4ca714a9461529ed8cea5908ada22"
 PKG_LICENSE="GPL-2.0-or-later"
 PKG_SITE="http://www.kodi.tv"
 PKG_URL="https://github.com/xbmc/xbmc/archive/${PKG_VERSION}.tar.gz"
@@ -138,7 +138,8 @@ configure_package() {
 
   if [ "${KODI_DVDCSS_SUPPORT}" = yes ]; then
     KODI_DVDCSS="-DENABLE_DVDCSS=ON \
-                 -DLIBDVDCSS_URL=${SOURCES}/libdvdcss/libdvdcss-$(get_pkg_version libdvdcss).tar.gz"
+                 -DLIBDVDCSS_URL=${SOURCES}/libdvdcss/libdvdcss-$(get_pkg_version libdvdcss).tar.xz \
+                 -DLIBDVDCSS_HASH=SHA256=$(get_pkg_variable libdvdcss PKG_SHA256)"
   else
     KODI_DVDCSS="-DENABLE_DVDCSS=OFF"
   fi
@@ -247,8 +248,10 @@ configure_package() {
   PKG_PATCH_DIRS+=" ae-fork"
 
   KODI_LIBDVD="${KODI_DVDCSS} \
-               -DLIBDVDNAV_URL=${SOURCES}/libdvdnav/libdvdnav-$(get_pkg_version libdvdnav).tar.gz \
-               -DLIBDVDREAD_URL=${SOURCES}/libdvdread/libdvdread-$(get_pkg_version libdvdread).tar.gz"
+               -DLIBDVDNAV_URL=${SOURCES}/libdvdnav/libdvdnav-$(get_pkg_version libdvdnav).tar.xz \
+               -DLIBDVDNAV_HASH=SHA256=$(get_pkg_variable libdvdnav PKG_SHA256) \
+               -DLIBDVDREAD_URL=${SOURCES}/libdvdread/libdvdread-$(get_pkg_version libdvdread).tar.xz \
+               -DLIBDVDREAD_HASH=SHA256=$(get_pkg_variable libdvdread PKG_SHA256)"
 
   PKG_CMAKE_OPTS_TARGET="-DNATIVEPREFIX=${TOOLCHAIN} \
                          -DWITH_TEXTUREPACKER=${TOOLCHAIN}/bin/TexturePacker \
