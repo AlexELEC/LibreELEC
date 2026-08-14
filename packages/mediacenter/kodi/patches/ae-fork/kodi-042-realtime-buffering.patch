@@ -1,8 +1,8 @@
 diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp
---- kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-05-25 06:20:44.127858738 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-05-25 06:29:40.000000000 +0000
-@@ -1028,22 +1028,24 @@ void CVideoPlayer::CloseDemuxer()
-   CServiceBroker::GetDataCacheCore().SignalSubtitleInfoChange();
+--- kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-08-14 06:12:29.074062661 +0000
++++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-08-14 06:02:24.177531372 +0000
+@@ -1062,22 +1062,24 @@ void CVideoPlayer::UpdateHasVideoAudio()
+     m_HasAudio = false;
  }
  
 -void CVideoPlayer::OpenDefaultStreams(bool reset)
@@ -30,7 +30,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    {
      if (OpenStream(m_CurrentVideo, stream.demuxerId, stream.id, stream.source, reset))
      {
-@@ -1053,8 +1055,14 @@ void CVideoPlayer::OpenDefaultStreams(bo
+@@ -1087,8 +1089,14 @@ void CVideoPlayer::OpenDefaultStreams(bo
    }
    if (!valid)
    {
@@ -47,7 +47,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    }
  
    // open audio stream
-@@ -1062,7 +1070,8 @@ void CVideoPlayer::OpenDefaultStreams(bo
+@@ -1096,7 +1104,8 @@ void CVideoPlayer::OpenDefaultStreams(bo
    if (!m_playerOptions.videoOnly)
    {
      PredicateAudioFilter af(m_processInfo->GetVideoSettings().m_AudioStream, m_playerOptions.preferStereo);
@@ -57,7 +57,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
      {
        if(OpenStream(m_CurrentAudio, stream.demuxerId, stream.id, stream.source, reset))
        {
-@@ -1070,12 +1079,18 @@ void CVideoPlayer::OpenDefaultStreams(bo
+@@ -1104,12 +1113,18 @@ void CVideoPlayer::OpenDefaultStreams(bo
          break;
        }
      }
@@ -77,8 +77,8 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
 +    }
    }
  
-   // enable or disable subtitles
-@@ -1192,10 +1207,188 @@ void CVideoPlayer::OpenDefaultStreams(bo
+   UpdateHasVideoAudio();
+@@ -1228,10 +1243,188 @@ void CVideoPlayer::OpenDefaultStreams(bo
  
    if (noBlurayMenu)
      SynchronizeDemuxer();
@@ -267,7 +267,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
  bool CVideoPlayer::ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream)
  {
  
-@@ -1236,12 +1429,54 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
+@@ -1272,12 +1465,54 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
      // stream changed, update and open defaults
      if (packet->iStreamId == DMX_SPECIALID_STREAMCHANGE)
      {
@@ -322,9 +322,9 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
 +        }
 +      }
  
-       // reevaluate HasVideo/Audio, we may have switched from/to a radio channel
-       if(m_CurrentVideo.id < 0)
-@@ -1251,25 +1486,11 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
+       // OpenDefaultStreams() returns early while DVD/BD navigation controls stream
+       // selection, so reevaluate here as well (we may have switched from/to a radio
+@@ -1286,25 +1521,11 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
  
        return true;
      }
@@ -354,7 +354,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
        return true;
      }
  
-@@ -1293,31 +1514,37 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
+@@ -1328,31 +1549,37 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
            {
              if (now - m_lastStreamResetTime > minResetInterval)
              {
@@ -404,7 +404,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
        }
      }
      return true;
-@@ -1452,6 +1679,20 @@ void CVideoPlayer::Prepare()
+@@ -1487,6 +1714,20 @@ void CVideoPlayer::Prepare()
    m_offset_pts = 0;
    m_CurrentAudio.lastdts = DVD_NOPTS_VALUE;
    m_CurrentVideo.lastdts = DVD_NOPTS_VALUE;
@@ -425,7 +425,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
  
    IPlayerCallback *cb = &m_callback;
    CFileItem fileItem = m_item;
-@@ -1617,22 +1858,8 @@ void CVideoPlayer::Prepare()
+@@ -1652,22 +1893,8 @@ void CVideoPlayer::Prepare()
    if (m_pInputStream->IsRealtime() &&
        m_pInputStream->IsStreamType(DVDSTREAM_TYPE_ADDON))
    {
@@ -450,7 +450,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    }
  }
  
-@@ -1702,6 +1929,9 @@ void CVideoPlayer::Process()
+@@ -1737,6 +1964,9 @@ void CVideoPlayer::Process()
            !m_SelectionStreams.m_Streams.empty())
          OpenDefaultStreams();
  
@@ -460,7 +460,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
        UpdatePlayState(0);
      }
  
-@@ -1720,11 +1950,81 @@ void CVideoPlayer::Process()
+@@ -1755,11 +1985,81 @@ void CVideoPlayer::Process()
        int audioLevel = 90;
        int videoLevel = 90;
        bool fillBuffer = false;
@@ -543,7 +543,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
        {
          fillBuffer = true;
        }
-@@ -1732,9 +2032,61 @@ void CVideoPlayer::Process()
+@@ -1767,9 +2067,61 @@ void CVideoPlayer::Process()
          m_pDemuxer->FillBuffer(fillBuffer);
      }
  
@@ -608,7 +608,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
      {
        if (m_playSpeed == DVD_PLAYSPEED_PAUSE &&
            m_demuxerSpeed != DVD_PLAYSPEED_PAUSE)
-@@ -1760,6 +2112,29 @@ void CVideoPlayer::Process()
+@@ -1795,6 +2147,29 @@ void CVideoPlayer::Process()
      DemuxPacket* pPacket = NULL;
      CDemuxStream *pStream = NULL;
      ReadPacket(pPacket, pStream);
@@ -638,7 +638,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
      if (pPacket && !pStream)
      {
        /* probably a empty packet, just free it and move on */
-@@ -1819,6 +2194,66 @@ void CVideoPlayer::Process()
+@@ -1854,6 +2229,66 @@ void CVideoPlayer::Process()
          continue;
        }
  
@@ -705,7 +705,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
        // input stream asked us to just retry
        if(next == CDVDInputStream::NEXTSTREAM_RETRY)
        {
-@@ -2164,139 +2599,53 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -2199,139 +2634,53 @@ void CVideoPlayer::HandlePlaySpeed()
    if (tolerateStall && m_caching != CACHESTATE_DONE)
      SetCaching(CACHESTATE_DONE);
  
@@ -892,7 +892,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
  
    // sync streams to clock
    if ((m_CurrentVideo.syncState == IDVDStreamPlayer::SYNC_WAITSYNC) ||
-@@ -2333,7 +2682,7 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -2368,7 +2717,7 @@ void CVideoPlayer::HandlePlaySpeed()
      }
      else if (video && audio)
      {
@@ -901,7 +901,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
        if (m_CurrentAudio.syncState == IDVDStreamPlayer::SYNC_WAITSYNC)
          CLog::Log(LOGDEBUG, "VideoPlayer::Sync - Audio - pts: {:.3f}, cache: {:.3f}, totalcache: {:.3f}, packets:{:d} level:{:d}",
                               m_CurrentAudio.starttime / DVD_TIME_BASE, m_CurrentAudio.cachetime / DVD_TIME_BASE, m_CurrentAudio.cachetotal / DVD_TIME_BASE, m_CurrentAudio.packets, m_VideoPlayerAudio->GetLevel());
-@@ -2377,6 +2726,17 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -2412,6 +2761,17 @@ void CVideoPlayer::HandlePlaySpeed()
          clock = m_CurrentVideo.starttime - m_CurrentVideo.cachetotal;
        }
  
@@ -919,7 +919,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
        m_clock.Discontinuity(clock);
        m_CurrentAudio.syncState = IDVDStreamPlayer::SYNC_INSYNC;
        m_CurrentAudio.avsync = CCurrentStream::AV_SYNC_NONE;
-@@ -2386,7 +2746,34 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -2421,7 +2781,34 @@ void CVideoPlayer::HandlePlaySpeed()
            std::make_shared<CDVDMsgDouble>(CDVDMsg::GENERAL_RESYNC, clock), 1);
        m_VideoPlayerVideo->SendMessage(
            std::make_shared<CDVDMsgDouble>(CDVDMsg::GENERAL_RESYNC, clock), 1);
@@ -955,7 +955,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
        UpdatePlayState(0);
  
        m_syncTimer.Set(3000ms);
-@@ -2426,6 +2813,377 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -2461,6 +2848,377 @@ void CVideoPlayer::HandlePlaySpeed()
      }
    }
  
@@ -1333,7 +1333,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    // handle ff/rw
    if (m_playSpeed != DVD_PLAYSPEED_NORMAL && m_playSpeed != DVD_PLAYSPEED_PAUSE)
    {
-@@ -4230,23 +4988,6 @@ bool CVideoPlayer::OpenVideoStream(CDVDS
+@@ -4409,23 +5167,6 @@ bool CVideoPlayer::OpenVideoStream(CDVDS
    if (hint.flags & AV_DISPOSITION_ATTACHED_PIC)
      return false;
  
@@ -1357,7 +1357,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    IDVDStreamPlayer* player = GetStreamPlayer(m_CurrentVideo.player);
    if(player == nullptr)
      return false;
-@@ -4260,6 +5001,26 @@ bool CVideoPlayer::OpenVideoStream(CDVDS
+@@ -4439,6 +5180,26 @@ bool CVideoPlayer::OpenVideoStream(CDVDS
      if (!player->OpenStream(hint))
        return false;
  
@@ -1385,9 +1385,9 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
  
      // look for any EDL files
 diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.h kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h
---- kodi/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-05-25 06:20:44.127858738 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-05-25 06:17:19.911229701 +0000
-@@ -481,6 +481,7 @@ protected:
+--- kodi/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-08-14 06:12:29.078062646 +0000
++++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-08-14 06:17:08.000000000 +0000
+@@ -493,6 +493,7 @@ protected:
    void SendPlayerMessage(std::shared_ptr<CDVDMsg> pMsg, unsigned int target);
  
    bool ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream);
@@ -1395,16 +1395,16 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.h kodi-patch/xbmc/cores/Vide
    bool IsValidStream(const CCurrentStream& stream);
    bool IsBetterStream(const CCurrentStream& current, CDemuxStream* stream);
    void CheckBetterStream(CCurrentStream& current, CDemuxStream* stream);
-@@ -489,7 +490,7 @@ protected:
+@@ -501,7 +502,7 @@ protected:
    bool OpenInputStream();
    bool OpenDemuxStream();
    void CloseDemuxer();
 -  void OpenDefaultStreams(bool reset = true);
 +  bool OpenDefaultStreams(bool reset = true, bool keepCurrentOnFailure = false);
+   void UpdateHasVideoAudio();
  
    void UpdatePlayState(double timeout);
-   void GetGeneralInfo(std::string& strVideoInfo);
-@@ -617,6 +618,20 @@ protected:
+@@ -661,6 +662,20 @@ protected:
    bool m_HasAudio;
  
    std::chrono::steady_clock::time_point m_lastStreamResetTime;
