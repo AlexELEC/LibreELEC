@@ -1,6 +1,7 @@
---- a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
-+++ b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
-@@ -1890,10 +1890,12 @@
+diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp kodi-patch/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp
+--- kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp	2026-11-04 12:22:40.452541371 +0000
++++ kodi-patch/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxFFmpeg.cpp	2026-11-04 12:25:02.000000000 +0000
+@@ -1755,10 +1755,12 @@ void CDVDDemuxFFmpeg::RestoreProbedStrea
      }
  
      // Only fill in what the re-open does not know, and never extradata or ch_layout:
@@ -17,7 +18,7 @@
      AVCodecParameters* cur = st->codecpar;
  
      if (cur->profile == AV_PROFILE_UNKNOWN)
-@@ -3146,6 +3148,9 @@
+@@ -2748,7 +2750,10 @@ TRANSPORT_STREAM_STATE CDVDDemuxFFmpeg::
        if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
        {
          if (idx == m_pkt.pkt.stream_index && m_pkt.pkt.dts != AV_NOPTS_VALUE &&
@@ -29,11 +30,11 @@
          {
            if (!m_startTime)
            {
-@@ -3169,6 +3173,9 @@
+@@ -2770,7 +2775,10 @@ TRANSPORT_STREAM_STATE CDVDDemuxFFmpeg::
        if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
        {
          if (static_cast<int>(i) == m_pkt.pkt.stream_index && m_pkt.pkt.dts != AV_NOPTS_VALUE &&
--            (st->codecpar->extradata)
+-            st->codecpar->extradata)
 +            (st->codecpar->extradata || st->codecpar->codec_id == AV_CODEC_ID_VVC ||
 +             st->codecpar->codec_id == AV_CODEC_ID_AVS2 ||
 +             (m_pInput->IsStreamType(DVDSTREAM_TYPE_PVRMANAGER) &&
