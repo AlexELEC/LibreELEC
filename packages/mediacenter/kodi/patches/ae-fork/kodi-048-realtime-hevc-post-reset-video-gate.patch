@@ -1,7 +1,8 @@
-diff -Naurp a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
---- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-06-01 16:31:25.407856656 +0000
-+++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-06-01 16:38:59.894212375 +0000
-@@ -1253,6 +1253,17 @@ bool CVideoPlayer::HandleStreamReset(boo
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+index c399fbfb..8ed92b3c 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+@@ -1319,6 +1319,17 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
    if (!wasRealtimePlaybackStarted)
      m_realtimeForceVideoCodecReopen = false;
  
@@ -19,7 +20,7 @@ diff -Naurp a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/Vi
    m_realtimeStreamResetLastTry = now;
    m_realtimeQueuesFullSleepSince = {};
    m_realtimeQueuesFullLastSoftRecovery = {};
-@@ -1454,6 +1465,30 @@ bool CVideoPlayer::HandleStreamReset(boo
+@@ -1520,6 +1531,30 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
    m_realtimePostTransitionVideoDropSince = {};
    m_realtimePostTransitionVideoDropLogged = false;
  
@@ -50,7 +51,7 @@ diff -Naurp a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/Vi
    // Keep the aggressive post-transition read window only for in-place realtime
    // stream switches after playback has already started. The forced STREAMRESET
    // used while opening a new inputstream is part of normal channel startup;
-@@ -1820,6 +1855,14 @@ void CVideoPlayer::Prepare()
+@@ -1885,6 +1920,14 @@ void CVideoPlayer::Prepare()
    m_realtimeStartupAudioStallGraceUntil = {};
    m_realtimeStartupAudioStallGraceLogged = false;
    m_realtimeExpectVideoStream = false;
@@ -65,7 +66,7 @@ diff -Naurp a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/Vi
    m_realtimeNoStreamsSince = {};
    m_realtimeStreamTransitionReadUntil = {};
    m_realtimeStreamResetPending = false;
-@@ -2639,6 +2682,64 @@ void CVideoPlayer::ProcessAudioData(CDem
+@@ -2767,6 +2810,64 @@ void CVideoPlayer::ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket)
  {
    CheckStreamChanges(m_CurrentAudio, pStream);
  
@@ -130,7 +131,7 @@ diff -Naurp a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/Vi
    bool checkcont = CheckContinuity(m_CurrentAudio, pPacket);
    UpdateTimestamps(m_CurrentAudio, pPacket);
  
-@@ -2681,6 +2782,22 @@ void CVideoPlayer::ProcessVideoData(CDem
+@@ -2806,6 +2907,22 @@ void CVideoPlayer::ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket)
    {
      checkcont = CheckContinuity(m_CurrentVideo, pPacket);
      UpdateTimestamps(m_CurrentVideo, pPacket);
@@ -153,7 +154,7 @@ diff -Naurp a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/Vi
    }
    if (checkcont && (m_CurrentVideo.avsync == CCurrentStream::AV_SYNC_CHECK))
      m_CurrentVideo.avsync = CCurrentStream::AV_SYNC_NONE;
-@@ -3105,10 +3222,14 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3264,10 +3381,14 @@ void CVideoPlayer::HandlePlaySpeed()
                audioStalled &&
                !videoStalled;
  
@@ -168,7 +169,7 @@ diff -Naurp a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/Vi
                (!audioStalled || startupAudioStallRelease);
  
            if (releaseBuffering)
-@@ -3185,8 +3306,12 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3344,8 +3465,12 @@ void CVideoPlayer::HandlePlaySpeed()
              const bool stalledWithBufferedQueues =
                  realtimeQueuesBuffered && (audioStalled || videoStalled);
  
@@ -181,10 +182,11 @@ diff -Naurp a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/Vi
                  (!realtimeQueuesBuffered && (audioStalled || emergencyResetPassed)) ||
                  (stalledWithBufferedQueues && emergencyResetPassed);
  
-diff -Naurp a/xbmc/cores/VideoPlayer/VideoPlayer.h b/xbmc/cores/VideoPlayer/VideoPlayer.h
---- a/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-06-01 16:31:25.360967305 +0000
-+++ b/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-06-01 16:37:10.867304502 +0000
-@@ -638,6 +638,13 @@ protected:
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.h b/xbmc/cores/VideoPlayer/VideoPlayer.h
+index 18824f2e..ea6b6d5a 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.h
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.h
+@@ -715,6 +715,13 @@ protected:
    bool m_realtimeStartupBufferingAllowed{true};
    bool m_realtimeExpectVideoStream{false};
    bool m_realtimeForceVideoCodecReopen{false};

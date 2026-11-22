@@ -1,9 +1,12 @@
+diff --git a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemux.h b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemux.h
+index 5c39a4d4..a2615fc7 100644
 --- a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemux.h
 +++ b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemux.h
-@@ -264,6 +264,15 @@ public:
+@@ -257,6 +257,15 @@ public:
+    */
    virtual DemuxPacket* Read() = 0;
  
-   /*
++  /*
 +   * Returns true while a demuxer has deferred a STREAMRESET until the new
 +   * selected video stream is ready.
 +   */
@@ -12,10 +15,11 @@
 +  /* Notify the demuxer that VideoPlayer has completed handling a STREAMRESET. */
 +  virtual void AcknowledgeStreamReset() {}
 +
-+  /*
+   /*
     * Seek, time in msec calculated from stream start
     */
-   virtual bool SeekTime(double time, bool backwards = false, double* startpts = nullptr) = 0;
+diff --git a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.h b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.h
+index 6549e0f8..75d9ee7d 100644
 --- a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.h
 +++ b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.h
 @@ -11,6 +11,8 @@
@@ -63,9 +67,11 @@
  
  private:
    static inline bool CodecHasExtraData(AVCodecID id);
+diff --git a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp
+index 7dd6ac74..c4a5577b 100644
 --- a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp
 +++ b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp
-@@ -70,6 +70,10 @@ CDVDDemuxClient::~CDVDDemuxClient()
+@@ -84,6 +84,10 @@ CDVDDemuxClient::~CDVDDemuxClient()
  
  bool CDVDDemuxClient::Open(std::shared_ptr<CDVDInputStream> pInput)
  {
@@ -76,7 +82,7 @@
    Abort();
  
    m_pInput = std::move(pInput);
-@@ -89,12 +93,25 @@ bool CDVDDemuxClient::Open(std::shared_p
+@@ -103,12 +107,25 @@ bool CDVDDemuxClient::Open(std::shared_ptr<CDVDInputStream> pInput)
  
  void CDVDDemuxClient::Dispose()
  {
@@ -102,14 +108,15 @@
  void CDVDDemuxClient::DisposeStreams()
  {
    m_streams.clear();
-@@ -370,55 +387,210 @@ DemuxPacket* CDVDDemuxClient::Read()
+@@ -384,6 +401,60 @@ DemuxPacket* CDVDDemuxClient::Read()
    if (!m_IDemux)
      return nullptr;
  
-+  const auto makeEmptyPacket = [this]()
++  const auto makeEmptyPacket = [this](bool inputDropped = false)
 +  {
 +    DemuxPacket* pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
 +    pPacket->demuxerId = GetDemuxerId();
++    pPacket->m_inputDropped = inputDropped;
 +    return pPacket;
 +  };
 +
@@ -162,7 +169,11 @@
    if (m_packet)
      return m_packet.release();
  
-   m_packet.reset(m_IDemux->ReadDemux());
+@@ -397,55 +468,154 @@ DemuxPacket* CDVDDemuxClient::Read()
+     CDVDDemuxUtils::FreeDemuxPacket(m_packet.release());
+     m_packet.reset(m_IDemux->ReadDemux());
+   }
+-  if (!m_packet)
 +
 +  // Do not leave VideoPlayer blind to a transition indefinitely if the upstream
 +  // source stalls before providing the packet that would complete extradata parsing.
@@ -174,17 +185,16 @@
 +       m_packet->iStreamId == DMX_SPECIALID_STREAMRESET);
 +  if (streamResetWaitExpired() && !layoutMarker &&
 +      (!m_packet || m_packet->iStreamId < 0))
-+  {
+   {
+-    return nullptr;
 +    if (m_packet)
 +      CDVDDemuxUtils::FreeDemuxPacket(m_packet.release());
 +    return takePendingStreamReset(true);
-+  }
-+
-   if (!m_packet)
--  {
-     return nullptr;
--  }
+   }
  
++  if (!m_packet)
++    return nullptr;
++
    if (m_packet->iStreamId == DMX_SPECIALID_STREAMINFO)
    {
      RequestStreams();
@@ -206,8 +216,10 @@
 +    }
 +
      CDVDDemuxUtils::FreeDemuxPacket(m_packet.release());
--    return CDVDDemuxUtils::AllocateDemuxPacket(0);
-+    return makeEmptyPacket();
+-    DemuxPacket* pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
+-    pPacket->m_inputDropped = true;
+-    return pPacket;
++    return makeEmptyPacket(true);
    }
    else if (m_packet->iStreamId == DMX_SPECIALID_STREAMCHANGE ||
             m_packet->iStreamId == DMX_SPECIALID_STREAMRESET)
@@ -324,17 +336,21 @@
 +
    if (!IsVideoReady())
    {
+     const bool inputDropped = m_packet->iStreamId != -1;
      CDVDDemuxUtils::FreeDemuxPacket(m_packet.release());
 -    DemuxPacket *pPacket = CDVDDemuxUtils::AllocateDemuxPacket(0);
 -    pPacket->demuxerId = GetDemuxerId();
+-    pPacket->m_inputDropped = inputDropped;
 -    return pPacket;
-+    return makeEmptyPacket();
++    return makeEmptyPacket(inputDropped);
    }
  
    //! @todo drop this block
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+index 1d6bc641..06fc3593 100644
 --- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp
 +++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
-@@ -1651,6 +1651,9 @@ bool CVideoPlayer::HandleStreamReset(boo
+@@ -1650,6 +1650,9 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
      m_realtimePostTransitionVideoDropLogged = false;
    }
  
@@ -344,25 +360,29 @@
    bad_packet_count = 0;
    CLog::Log(LOGINFO,
              "VideoPlayer: [STREAM RESET] done! Demux A/V streams: {}/{} | Current A/V IDs: {}/{}",
-@@ -2370,6 +2373,8 @@ void CVideoPlayer::Process()
-     const bool audioQueueFull = !m_VideoPlayerAudio->AcceptsData() && m_CurrentAudio.id >= 0;
-     const bool videoQueueFull = !m_VideoPlayerVideo->AcceptsData() && m_CurrentVideo.id >= 0;
+@@ -2375,6 +2378,8 @@ void CVideoPlayer::Process()
+     const bool videoQueueFull = !m_VideoPlayerVideo->AcceptsData() && m_CurrentVideo.id >= 0 &&
+                                 !m_CurrentVideo.replaying;
      const bool realtime = IsRealtimePVRStream(m_pInputStream, m_item);
 +    const bool realtimeDemuxResetPending =
 +        realtime && m_pDemuxer && m_pDemuxer->HasPendingStreamReset();
      const auto now = std::chrono::steady_clock::now();
      if (m_pendingOpenFile &&
          m_realtimeStreamTransitionReadUntil != std::chrono::steady_clock::time_point{})
-@@ -2396,7 +2401,7 @@ void CVideoPlayer::Process()
+@@ -2401,9 +2406,9 @@ void CVideoPlayer::Process()
          realtime && !m_pendingOpenFile &&
          m_realtimeStreamTransitionReadUntil != std::chrono::steady_clock::time_point{};
      const bool realtimeLiveTransition =
 -        realtime && (m_realtimeStreamResetPending ||
+-                    (m_caching == CACHESTATE_FULL && m_State.streamsReady) ||
+-                    realtimeTransitionRead);
 +        realtime && (m_realtimeStreamResetPending || realtimeDemuxResetPending ||
-                      (m_caching == CACHESTATE_FULL && m_State.streamsReady) ||
-                      realtimeTransitionRead);
++                     (m_caching == CACHESTATE_FULL && m_State.streamsReady) ||
++                     realtimeTransitionRead);
      const bool realtimeQueuesFull =
-@@ -3231,7 +3236,11 @@ void CVideoPlayer::HandlePlaySpeed()
+         (!m_HasAudio || audioQueueFull) && (!m_HasVideo || videoQueueFull) &&
+         (m_HasAudio || m_HasVideo);
+@@ -3234,7 +3239,11 @@ void CVideoPlayer::HandlePlaySpeed()
  
    const bool realtime = m_pInputStream && m_pInputStream->IsRealtime();
    const bool realtimePVR = IsRealtimePVRStream(m_pInputStream, m_item);
@@ -375,7 +395,7 @@
    const bool noActiveStreams = (m_CurrentAudio.id < 0 && m_CurrentVideo.id < 0);
    if (!noActiveStreams)
      m_realtimeNoStreamsSince = {};
-@@ -3251,7 +3260,8 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3254,7 +3263,8 @@ void CVideoPlayer::HandlePlaySpeed()
        (m_CurrentAudio.id < 0 || audioLevel >= realtimeAudioReadyLevel);
    const bool videoReady =
        (m_CurrentVideo.id < 0 || videoLevel >= realtimeVideoReadyLevel);
@@ -385,7 +405,7 @@
    const bool audioBuffered =
        (m_CurrentAudio.id < 0 || audioLevel >= realtimeAudioBufferedLevel);
    const bool videoBuffered =
-@@ -3263,7 +3273,8 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3266,7 +3276,8 @@ void CVideoPlayer::HandlePlaySpeed()
    const bool videoCritical =
        (m_CurrentVideo.id >= 0 && m_CurrentVideo.inited && videoLevel >= 0 &&
         videoLevel <= realtimeVideoCriticalLevel);
@@ -395,7 +415,7 @@
  
    // sync streams to clock
    if ((m_CurrentVideo.syncState == IDVDStreamPlayer::SYNC_WAITSYNC) ||
-@@ -3284,7 +3295,8 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3287,7 +3298,8 @@ void CVideoPlayer::HandlePlaySpeed()
      // current realtime source. In particular, a catchup stream may have a
      // non-zero archive PTS offset. Do not resync one player to a stale/zero
      // m_clock.GetClock(); wait for the common start-time calculation below.
@@ -405,7 +425,7 @@
  
      const bool syncAudio = !deferRealtimeResync &&
                             m_CurrentAudio.syncState == IDVDStreamPlayer::SYNC_WAITSYNC &&
-@@ -3316,7 +3328,7 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3317,7 +3329,7 @@ void CVideoPlayer::HandlePlaySpeed()
        m_VideoPlayerVideo->SendMessage(
            std::make_shared<CDVDMsgDouble>(CDVDMsg::GENERAL_RESYNC, m_clock.GetClock()), 1);
      }
@@ -414,7 +434,7 @@
      {
        // Preserve the realtime startup behavior: do not anchor the master clock to
        // zero while both stream start timestamps are still unknown. For non-realtime
-@@ -3463,7 +3475,7 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3464,7 +3476,7 @@ void CVideoPlayer::HandlePlaySpeed()
  
    if (m_caching == CACHESTATE_FULL)
    {
@@ -423,7 +443,7 @@
      {
        // Keep realtime live playback in buffering while demuxer temporarily has
        // no active audio/video streams. Do not let the generic cache logic below
-@@ -3687,7 +3699,7 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3688,7 +3700,7 @@ void CVideoPlayer::HandlePlaySpeed()
      }
    }
  
@@ -432,7 +452,7 @@
    {
      // if all enabled streams have been inited we are done
      if ((m_CurrentVideo.id >= 0 || m_CurrentAudio.id >= 0) &&
-@@ -3706,7 +3718,7 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3707,7 +3719,7 @@ void CVideoPlayer::HandlePlaySpeed()
      }
    }
  
@@ -441,7 +461,7 @@
    {
      // if all enabled streams have started playing we are done
      if ((m_CurrentVideo.id < 0 || !m_VideoPlayerVideo->IsStalled()) &&
-@@ -3714,7 +3726,7 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3715,7 +3727,7 @@ void CVideoPlayer::HandlePlaySpeed()
        SetCaching(CACHESTATE_DONE);
    }
  
@@ -450,7 +470,7 @@
    {
      if (m_playSpeed == DVD_PLAYSPEED_NORMAL && !tolerateStall)
      {
-@@ -3760,7 +3772,7 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3761,7 +3773,7 @@ void CVideoPlayer::HandlePlaySpeed()
        }
  
        const bool realtimePostTransitionVideoGrace =
@@ -459,7 +479,7 @@
            m_realtimePostTransitionVideoGraceUntil != std::chrono::steady_clock::time_point{} &&
            (now < m_realtimePostTransitionVideoGraceUntil ||
             m_realtimePostTransitionVideoDropSince != std::chrono::steady_clock::time_point{});
-@@ -3843,9 +3855,10 @@ void CVideoPlayer::HandlePlaySpeed()
+@@ -3844,9 +3856,10 @@ void CVideoPlayer::HandlePlaySpeed()
        }
  
        // take action if audio or video stream is stalled

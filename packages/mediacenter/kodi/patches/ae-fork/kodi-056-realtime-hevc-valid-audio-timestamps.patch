@@ -1,6 +1,8 @@
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+index 051f9beb..bd4e520f 100644
 --- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp
 +++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
-@@ -69,6 +69,7 @@
+@@ -67,6 +67,7 @@
  #include <algorithm>
  #include <cassert>
  #include <chrono>
@@ -8,7 +10,7 @@
  #include <iterator>
  #include <limits>
  #include <memory>
-@@ -1308,6 +1309,21 @@ static bool IsRealtimePVRStream(const st
+@@ -1307,6 +1308,21 @@ static bool IsRealtimePVRStream(const std::shared_ptr<CDVDInputStream>& inputStr
           item.GetProperty(STREAM_PROPERTY_INPUTSTREAM).asString() == "inputstream.ffmpegdirect";
  }
  
@@ -30,7 +32,7 @@
  bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
  {
    const bool realtime = m_pInputStream && m_pInputStream->IsRealtime();
-@@ -3004,6 +3020,15 @@ void CVideoPlayer::ProcessAudioData(CDem
+@@ -3044,6 +3060,15 @@ void CVideoPlayer::ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket)
  
    if (realtimeHevcGate)
    {
@@ -46,7 +48,7 @@
      const double audioDts = pPacket->dts != DVD_NOPTS_VALUE ? pPacket->dts : pPacket->pts;
      const auto now = std::chrono::steady_clock::now();
      auto logDrop = [&](const char* reason)
-@@ -3013,16 +3038,17 @@ void CVideoPlayer::ProcessAudioData(CDem
+@@ -3053,16 +3078,17 @@ void CVideoPlayer::ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket)
        {
          CLog::Log(LOGWARNING,
                    "VideoPlayer: drop realtime HEVC audio packet after reset: {} | audio dts:{:.3f} pts:{:.3f} video dts:{:.3f}",
@@ -70,7 +72,7 @@
      {
        logDrop("invalid audio timestamp");
        CDVDDemuxUtils::FreeDemuxPacket(pPacket);
-@@ -3038,6 +3064,17 @@ void CVideoPlayer::ProcessAudioData(CDem
+@@ -3078,6 +3104,17 @@ void CVideoPlayer::ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket)
  
      if (m_realtimeHevcPostResetGate && !m_realtimeHevcPostResetAudioReady)
      {
@@ -88,7 +90,7 @@
        const double diff = audioDts - m_realtimeHevcPostResetVideoDts;
        if (std::abs(diff) > DVD_MSEC_TO_TIME(500))
        {
-@@ -3090,6 +3127,20 @@ void CVideoPlayer::ProcessAudioData(CDem
+@@ -3128,6 +3165,20 @@ void CVideoPlayer::ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket)
  void CVideoPlayer::ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket)
  {
    CheckStreamChanges(m_CurrentVideo, pStream);
@@ -109,7 +111,7 @@
    bool checkcont = false;
  
    if( pPacket->iSize != 4) //don't check the EOF_SEQUENCE of stillframes
-@@ -3097,13 +3148,10 @@ void CVideoPlayer::ProcessVideoData(CDem
+@@ -3135,13 +3186,10 @@ void CVideoPlayer::ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket)
      checkcont = CheckContinuity(m_CurrentVideo, pPacket);
      UpdateTimestamps(m_CurrentVideo, pPacket);
  

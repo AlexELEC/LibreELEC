@@ -1,6 +1,8 @@
---- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-09-09 11:11:20.238407031 +0000
-+++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-09-09 11:11:20.240280574 +0000
-@@ -1307,10 +1307,19 @@ bool CVideoPlayer::HandleStreamReset(boo
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+index 97460861..0edfae77 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+@@ -1308,10 +1308,19 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
    // from inputstream add-ons. Resetting it recreates the parser and discards
    // both already extracted extradata and any partial parser state. Keep it
    // alive until the pending HEVC stream can be opened.
@@ -22,7 +24,7 @@
      resetDemuxer = false;
    }
  
-@@ -1937,6 +1946,12 @@ void CVideoPlayer::Prepare()
+@@ -1938,6 +1947,12 @@ void CVideoPlayer::Prepare()
    m_realtimeExpectVideoStream = false;
    m_realtimeForceVideoCodecReopen = false;
    m_realtimeHevcExtradataPending = false;
@@ -35,7 +37,7 @@
    m_realtimeHevcPostResetGate = false;
    m_realtimeHevcPostResetVideoSeen = false;
    m_realtimeHevcPostResetAudioReady = false;
-@@ -5625,6 +5640,12 @@ bool CVideoPlayer::OpenStream(CCurrentSt
+@@ -5863,6 +5878,12 @@ bool CVideoPlayer::OpenStream(CCurrentStream& current, int64_t demuxerId, int iS
                  "VideoPlayer: realtime HEVC extradata recovery succeeded ({} bytes)",
                  hint.extradata.GetSize());
        m_realtimeHevcExtradataPending = false;
@@ -48,7 +50,7 @@
      }
  
      int oldId = current.id;
-@@ -5666,6 +5687,12 @@ bool CVideoPlayer::OpenStream(CCurrentSt
+@@ -5906,6 +5927,12 @@ bool CVideoPlayer::OpenStream(CCurrentStream& current, int64_t demuxerId, int iS
                    "VideoPlayer: realtime HEVC opening deferred; preserve client parser until raw extradata is extracted");
        }
        m_realtimeHevcExtradataPending = true;
@@ -61,9 +63,11 @@
        CLog::Log(LOGWARNING,
                  "VideoPlayer: realtime HEVC stream has no extradata yet, keep stream enabled for retry");
      }
---- a/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-09-09 11:11:20.239378282 +0000
-+++ b/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-09-09 11:11:20.241199170 +0000
-@@ -688,6 +688,12 @@ protected:
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.h b/xbmc/cores/VideoPlayer/VideoPlayer.h
+index af25dc90..da13dd22 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.h
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.h
+@@ -718,6 +718,12 @@ protected:
    // CDVDDemuxClient owns the parser which extracts HEVC VPS/SPS/PPS from raw
    // inputstream packets. Do not recreate that demuxer while this is true.
    bool m_realtimeHevcExtradataPending{false};

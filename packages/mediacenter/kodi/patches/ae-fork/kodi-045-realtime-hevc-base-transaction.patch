@@ -1,7 +1,8 @@
-diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp
---- kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-08-14 06:25:55.009344546 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-08-14 06:24:09.329951563 +0000
-@@ -1062,7 +1062,7 @@ void CVideoPlayer::UpdateHasVideoAudio()
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+index 582aa089..70bcc66a 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+@@ -1094,7 +1094,7 @@ void CVideoPlayer::UpdateHasVideoAudio()
      m_HasAudio = false;
  }
  
@@ -10,7 +11,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
  {
    // if input stream dictate, we will open later
    // unless we are loading a bluray playlist directly in which case set now
-@@ -1097,6 +1097,12 @@ bool CVideoPlayer::OpenDefaultStreams(bo
+@@ -1129,6 +1129,12 @@ bool CVideoPlayer::OpenDefaultStreams(bool reset, bool keepCurrentOnFailure)
        CloseStream(m_CurrentVideo, true);
        m_processInfo->ResetVideoCodecInfo();
      }
@@ -23,7 +24,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    }
  
    // open audio stream
-@@ -1264,6 +1270,7 @@ bool CVideoPlayer::HandleStreamReset(boo
+@@ -1296,6 +1302,7 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
  
    const bool wasPending = m_realtimeStreamResetPending;
    const bool wasRealtimePlaybackStarted = realtime && m_State.streamsReady;
@@ -31,7 +32,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    m_realtimeStreamResetLastTry = now;
    m_realtimeQueuesFullSleepSince = {};
    m_realtimeQueuesFullLastSoftRecovery = {};
-@@ -1331,15 +1338,42 @@ bool CVideoPlayer::HandleStreamReset(boo
+@@ -1363,15 +1370,42 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
      return false;
    }
  
@@ -81,7 +82,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    // Purge any pending PLAYER_STARTED messages.
    m_messenger.Flush(CDVDMsg::PLAYER_STARTED);
  
-@@ -1377,11 +1411,34 @@ bool CVideoPlayer::HandleStreamReset(boo
+@@ -1409,11 +1443,34 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
                "VideoPlayer: realtime stream reset will restart A/V sync as fresh playback");
    }
  
@@ -117,7 +118,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    if (!m_HasVideo && !m_HasAudio)
    {
      if (!wasPending)
-@@ -1481,16 +1538,45 @@ bool CVideoPlayer::ReadPacket(DemuxPacke
+@@ -1513,16 +1570,45 @@ bool CVideoPlayer::ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream)
        m_pDemuxer->GetPrograms(m_programs);
        UpdateContent();
  
@@ -166,7 +167,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
          {
            // A realtime STREAMCHANGE can arrive in the middle of an in-place TVLINK
            // live source transition. Keep demux reads active only after playback is
-@@ -1736,6 +1822,7 @@ void CVideoPlayer::Prepare()
+@@ -1768,6 +1854,7 @@ void CVideoPlayer::Prepare()
    m_realtimeStartupBufferingAllowed = true;
    m_realtimeStartupAudioStallGraceUntil = {};
    m_realtimeStartupAudioStallGraceLogged = false;
@@ -174,20 +175,20 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    m_realtimeNoStreamsSince = {};
    m_realtimeStreamTransitionReadUntil = {};
    m_realtimeStreamResetPending = false;
-@@ -5233,7 +5320,11 @@ bool CVideoPlayer::OpenStream(CCurrentSt
+@@ -5606,7 +5693,11 @@ bool CVideoPlayer::OpenStream(CCurrentStream& current, int64_t demuxerId, int iS
    }
    else
    {
--    if(stream)
+-    if (stream && !m_bStop)
 +    const bool keepRealtimeHevcRetry =
 +        m_pInputStream && m_pInputStream->IsRealtime() && current.type == StreamType::VIDEO &&
 +        hint.codec == AV_CODEC_ID_HEVC && hint.extradata.GetSize() == 0;
 +
-+    if (stream && !keepRealtimeHevcRetry)
++    if (stream && !m_bStop && !keepRealtimeHevcRetry)
      {
        /* mark stream as disabled, to disallow further attempts*/
        CLog::Log(LOGWARNING, "{} - Unsupported stream {}. Stream disabled.", __FUNCTION__,
-@@ -5246,6 +5337,11 @@ bool CVideoPlayer::OpenStream(CCurrentSt
+@@ -5619,6 +5710,11 @@ bool CVideoPlayer::OpenStream(CCurrentStream& current, int64_t demuxerId, int iS
        failedStream.source = source;
        SetEnableStream(failedStream, false);
      }
@@ -199,7 +200,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    }
  
    UpdateContentState();
-@@ -5396,6 +5492,8 @@ bool CVideoPlayer::OpenVideoStream(CDVDS
+@@ -5774,6 +5870,8 @@ bool CVideoPlayer::OpenVideoStream(CDVDStreamInfo& hint, bool reset)
      player->SendMessage(std::make_shared<CDVDMsg>(CDVDMsg::GENERAL_RESET), 0);
  
    m_HasVideo = true;
@@ -208,10 +209,11 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
  
    static_cast<IDVDStreamPlayerVideo*>(player)->SendMessage(
        std::make_shared<CDVDMsg>(CDVDMsg::PLAYER_REQUEST_STATE), 1);
-diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.h kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h
---- kodi/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-08-14 06:25:55.009344546 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-08-14 06:27:36.000000000 +0000
-@@ -502,7 +502,7 @@ protected:
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.h b/xbmc/cores/VideoPlayer/VideoPlayer.h
+index 86d84ffb..3b68bb16 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.h
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.h
+@@ -525,7 +525,7 @@ protected:
    bool OpenInputStream();
    bool OpenDemuxStream();
    void CloseDemuxer();
@@ -220,7 +222,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.h kodi-patch/xbmc/cores/Vide
    void UpdateHasVideoAudio();
  
    void UpdatePlayState(double timeout);
-@@ -680,6 +680,7 @@ protected:
+@@ -713,6 +713,7 @@ protected:
    std::chrono::steady_clock::time_point m_realtimePostTransitionVideoDropSince{};
    bool m_realtimePostTransitionVideoDropLogged{false};
    bool m_realtimeStartupBufferingAllowed{true};

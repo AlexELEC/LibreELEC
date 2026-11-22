@@ -1,7 +1,8 @@
-diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp kodi-patch/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp
---- kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp	2026-10-29 15:49:20.000000000 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp	2026-10-30 06:10:53.000000000 +0000
-@@ -552,9 +552,10 @@ DemuxPacket* CDVDDemuxClient::Read()
+diff --git a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp
+index 7661952d..42dc2016 100644
+--- a/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp
++++ b/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp
+@@ -573,9 +573,10 @@ DemuxPacket* CDVDDemuxClient::Read()
      if (!realtimePVRResetWaiting)
        return;
  
@@ -15,7 +16,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp kodi-patc
      const bool hasUsableVideoStream = std::any_of(
          m_streams.begin(), m_streams.end(), [](const auto& stream)
          {
-@@ -1045,14 +1046,15 @@ bool CDVDDemuxClient::IsVideoReady(bool
+@@ -1067,14 +1068,15 @@ bool CDVDDemuxClient::IsVideoReady(bool requireVideoStream)
      // During a realtime-PVR STREAMRESET, m_videoStreamPlaying can still refer
      // to the previous layout. Do not interpret the absence of that old stream ID
      // as proof that replacement video exists. Require a video entry in the new
@@ -34,10 +35,11 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/DVDDemuxers/DVDDemuxClient.cpp kodi-patc
            !CodecHasExtraData(stream.second->codec) || stream.second->extraData)
          return true;
      }
-diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp
---- kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-10-29 15:49:20.000000000 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-10-30 06:10:15.000000000 +0000
-@@ -1403,13 +1403,13 @@ bool CVideoPlayer::HandleStreamReset(boo
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+index bd4e520f..9ff5ba88 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+@@ -1402,13 +1402,13 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
  
    if (!expectedRealtimeVideo)
    {
@@ -58,7 +60,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    }
  
    m_realtimeStreamResetLastTry = now;
-@@ -1697,28 +1697,34 @@ bool CVideoPlayer::HandleStreamReset(boo
+@@ -1696,28 +1696,34 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
    m_realtimePostTransitionVideoDropSince = {};
    m_realtimePostTransitionVideoDropLogged = false;
  
@@ -111,7 +113,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    }
  
    // Keep the aggressive post-transition read window only for in-place realtime
-@@ -2121,13 +2127,13 @@ void CVideoPlayer::Prepare()
+@@ -2120,13 +2126,13 @@ void CVideoPlayer::Prepare()
    m_realtimeHevcExtradataPendingCodec = AV_CODEC_ID_NONE;
    m_realtimeHevcExtradataPendingWidth = 0;
    m_realtimeHevcExtradataPendingHeight = 0;
@@ -132,7 +134,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    m_realtimeNoStreamsSince = {};
    m_realtimeStreamTransitionReadUntil = {};
    m_realtimeStreamResetPending = false;
-@@ -3014,12 +3020,14 @@ void CVideoPlayer::ProcessAudioData(CDem
+@@ -3053,12 +3059,14 @@ void CVideoPlayer::ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket)
  {
    CheckStreamChanges(m_CurrentAudio, pStream);
  
@@ -152,7 +154,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    {
      // Normalize either signed form of a missing timestamp before the generic
      // CheckContinuity()/UpdateTimestamps() logic sees this packet. Those paths
-@@ -3034,18 +3042,18 @@ void CVideoPlayer::ProcessAudioData(CDem
+@@ -3073,18 +3081,18 @@ void CVideoPlayer::ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket)
      const auto now = std::chrono::steady_clock::now();
      auto logDrop = [&](const char* reason)
      {
@@ -178,7 +180,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
        }
      };
  
-@@ -3056,41 +3064,42 @@ void CVideoPlayer::ProcessAudioData(CDem
+@@ -3095,41 +3103,42 @@ void CVideoPlayer::ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket)
        return;
      }
  
@@ -233,7 +235,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    }
  
    bool checkcont = CheckContinuity(m_CurrentAudio, pPacket);
-@@ -3129,10 +3138,14 @@ void CVideoPlayer::ProcessVideoData(CDem
+@@ -3166,10 +3175,14 @@ void CVideoPlayer::ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket)
  {
    CheckStreamChanges(m_CurrentVideo, pStream);
  
@@ -252,7 +254,7 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
    {
      // Normalize malformed/missing timestamp sentinels before generic continuity
      // and timestamp tracking sees this packet, just as in the audio path below.
-@@ -3149,15 +3162,16 @@ void CVideoPlayer::ProcessVideoData(CDem
+@@ -3186,15 +3199,16 @@ void CVideoPlayer::ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket)
      checkcont = CheckContinuity(m_CurrentVideo, pPacket);
      UpdateTimestamps(m_CurrentVideo, pPacket);
  
@@ -307,10 +309,11 @@ diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.cpp kodi-patch/xbmc/cores/Vi
                  (!realtimeQueuesBuffered && (audioStalled || emergencyResetPassed)) ||
                  (stalledWithBufferedQueues && emergencyResetPassed);
  
-diff -Naurp kodi/xbmc/cores/VideoPlayer/VideoPlayer.h kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h
---- kodi/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-10-29 15:49:20.000000000 +0000
-+++ kodi-patch/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-10-30 06:10:15.000000000 +0000
-@@ -716,13 +716,13 @@ protected:
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.h b/xbmc/cores/VideoPlayer/VideoPlayer.h
+index dc2c70f5..88cecdbf 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.h
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.h
+@@ -728,13 +728,13 @@ protected:
    AVCodecID m_realtimeHevcExtradataPendingCodec{AV_CODEC_ID_NONE};
    int m_realtimeHevcExtradataPendingWidth{0};
    int m_realtimeHevcExtradataPendingHeight{0};

@@ -1,7 +1,8 @@
-diff -Naurp orig/xbmc/cores/VideoPlayer/VideoPlayer.cpp new/xbmc/cores/VideoPlayer/VideoPlayer.cpp
---- orig/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-05-22 07:35:46.902460028 +0000
-+++ new/xbmc/cores/VideoPlayer/VideoPlayer.cpp	2026-05-22 07:36:42.015398395 +0000
-@@ -1231,6 +1231,9 @@ bool CVideoPlayer::HandleStreamReset(boo
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.cpp b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+index 748ac946..294b0936 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.cpp
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.cpp
+@@ -1297,6 +1297,9 @@ bool CVideoPlayer::HandleStreamReset(bool resetDemuxer, bool retryPending)
    const bool wasPending = m_realtimeStreamResetPending;
    const bool wasRealtimePlaybackStarted = realtime && m_State.streamsReady;
    m_realtimeStreamResetLastTry = now;
@@ -11,7 +12,7 @@ diff -Naurp orig/xbmc/cores/VideoPlayer/VideoPlayer.cpp new/xbmc/cores/VideoPlay
  
    auto markPending = [&](bool restartTimer)
    {
-@@ -1695,6 +1698,9 @@ void CVideoPlayer::Prepare()
+@@ -1760,6 +1763,9 @@ void CVideoPlayer::Prepare()
    m_realtimeStreamResetPending = false;
    m_realtimeStreamResetLastTry = {};
    m_realtimeStreamResetPendingSince = {};
@@ -21,7 +22,7 @@ diff -Naurp orig/xbmc/cores/VideoPlayer/VideoPlayer.cpp new/xbmc/cores/VideoPlay
  
    IPlayerCallback *cb = &m_callback;
    CFileItem fileItem = m_item;
-@@ -2082,10 +2088,95 @@ void CVideoPlayer::Process()
+@@ -2162,10 +2168,95 @@ void CVideoPlayer::Process()
      // for tens of seconds, enough for TVLINK's client socket send timeout. Keep the old
      // conservative rule for non-realtime playback, but for realtime stop only when every
      // active queue is full, and never during live buffering / pending reset transition.
@@ -121,10 +122,11 @@ diff -Naurp orig/xbmc/cores/VideoPlayer/VideoPlayer.cpp new/xbmc/cores/VideoPlay
      {
        if (m_playSpeed == DVD_PLAYSPEED_PAUSE &&
            m_demuxerSpeed != DVD_PLAYSPEED_PAUSE)
-diff -Naurp orig/xbmc/cores/VideoPlayer/VideoPlayer.h new/xbmc/cores/VideoPlayer/VideoPlayer.h
---- orig/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-05-22 07:35:46.930399055 +0000
-+++ new/xbmc/cores/VideoPlayer/VideoPlayer.h	2026-05-22 07:36:14.649578500 +0000
-@@ -623,6 +623,9 @@ protected:
+diff --git a/xbmc/cores/VideoPlayer/VideoPlayer.h b/xbmc/cores/VideoPlayer/VideoPlayer.h
+index c51ff422..d8eda9d1 100644
+--- a/xbmc/cores/VideoPlayer/VideoPlayer.h
++++ b/xbmc/cores/VideoPlayer/VideoPlayer.h
+@@ -700,6 +700,9 @@ protected:
    std::chrono::steady_clock::time_point m_realtimeStreamTransitionReadUntil{};
    std::chrono::steady_clock::time_point m_realtimeStreamResetLastTry{};
    std::chrono::steady_clock::time_point m_realtimeStreamResetPendingSince{};
